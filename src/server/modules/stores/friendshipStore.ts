@@ -1,6 +1,6 @@
 import { ObjectId, schema, Store } from 'modelence/server';
 import { dbPlayers } from './playerStore';
-import { FriendsList } from '@/server/schemas/friendship.schema';
+import { FriendsList } from '@/shared/schemas/friendship.schema';
 
 // ─── Friendship Store ───────────────────────────────────────────────────────
 

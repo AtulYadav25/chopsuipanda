@@ -6,11 +6,12 @@ import { verifyPersonalMessageSignature } from '@mysten/sui/verify';
 import jwt from "jsonwebtoken";
 import configModule from './configModule';
 import { successResponse, throwError } from '../utils/responsHandler';
-import { PlayerPublic, playerPublicSchema } from '../schemas/player.schema';
+import { PlayerPublic, playerPublicSchema } from '@/shared/schemas/player.schema';
 import { requirePlayer } from '../utils/authPlayer';
 import { dbWeeklyRewards } from './stores/weeklyRewardStore';
-import { generateUniqueReferralIdAndUsername, getRewardForDay } from '../utils/playerHelper';
+import { getRewardForDay, generateUniqueUsername } from '../utils/playerHelper';
 import { getPlayerSocialData } from './stores/friendshipStore';
+import { validateBody } from '../utils/validateBody';
 
 const playerModule = new Module('player', {
     stores: [dbPlayers],
@@ -91,7 +92,6 @@ const playerModule = new Module('player', {
                     chi: finalPlayer.chi,
                     chiEarned: finalPlayer.chiEarned,
                     powerUps: finalPlayer.powerUps,
-                    referralId: finalPlayer.referralId,
                     referredBy: finalPlayer.referredBy,
                     level: finalPlayer.level,
                     friends: socialData?.friends ?? [],
@@ -147,11 +147,10 @@ const playerModule = new Module('player', {
 
                 if (!player) {
                     isNewUser = true;
-                    const { referralId, username } = await generateUniqueReferralIdAndUsername();
+                    const username = await generateUniqueUsername();
 
                     player = await dbPlayers.create({
                         walletAddress,
-                        referralId,
                         username,   // temp username, they'll set it in onboarding
                         chi: 0,
                         chiEarned: 0,
@@ -218,6 +217,57 @@ const playerModule = new Module('player', {
             } catch (error) {
                 return throwError((error as Error).message)
             }
+        },
+
+        async onboardPlayer(args, { req }) {
+            try {
+                const { walletAddress } = requirePlayer(req);
+
+                const { success, data, error } = validateBody(z.object({
+                    username: z
+                        .string()
+                        .min(3)
+                        .max(25)
+                        .regex(
+                            /^[a-zA-Z0-9_]+$/,
+                            "Username can only contain letters, numbers, and underscores"
+                        ),
+                }), { username: args.username })
+
+
+                if (!success) {
+                    return throwError("Invalid username");
+                }
+
+                const { username } = data;
+
+                //Check if the username already exist
+                const existingPlayer = await dbPlayers.findOne({ username })
+
+                if (existingPlayer) {
+                    return throwError("Username Already Exist")
+                }
+
+                const updatedPlayer = await dbPlayers.findOneAndUpdate(
+                    { walletAddress },
+                    {
+                        $set: {
+                            username: args.username,
+                            updatedAt: new Date(),
+                        }
+                    }
+                );
+
+                if (!updatedPlayer) {
+                    return throwError("Player Not Found");
+                }
+
+                return successResponse({}, "Player Onboarded Successfully");
+
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
+
         }
 
     },

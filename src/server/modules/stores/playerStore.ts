@@ -23,7 +23,6 @@ export const playerSchema = {
     // Identity
     username: schema.string(),
     walletAddress: schema.string(),
-    referralId: schema.string(),
     referredBy: schema.objectId().optional(),   // ObjectId of referring player
 
     // Economy
@@ -70,7 +69,7 @@ export const dbPlayers = new Store('players', {
 
     indexes: [
         { key: { walletAddress: 1 }, unique: true },
-        { key: { referralId: 1 }, unique: true },
+        { key: { username: 1 }, unique: true },
         { key: { chiEarned: -1 } },       // Leaderboard ranking
         { key: { sessionId: 1 } },         // Weekly reset queries
         { key: { referredBy: 1 }, sparse: true },

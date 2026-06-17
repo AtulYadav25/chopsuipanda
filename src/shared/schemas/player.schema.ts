@@ -27,7 +27,6 @@ export const playerSchema = z.object({
     // Identity
     username: z.string(),
     walletAddress: z.string(),
-    referralId: z.string(),
     referredBy: objectIdSchema.optional(),
 
     // Economy
@@ -69,7 +68,6 @@ export const playerSchema = z.object({
 export const playerPublicSchema = playerSchema.pick({
     username: true,
     walletAddress: true,
-    referralId: true,
     chi: true,
     level: true,
     dailyStreak: true,
