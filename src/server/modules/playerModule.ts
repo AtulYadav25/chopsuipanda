@@ -1,4 +1,4 @@
-import { Module } from 'modelence/server'
+import { LiveData, Module } from 'modelence/server'
 import { time } from 'modelence'
 import { z } from 'zod'
 import { dbPlayers } from './stores/playerStore';
@@ -12,10 +12,40 @@ import { dbWeeklyRewards } from './stores/weeklyRewardStore';
 import { getRewardForDay, generateUniqueUsername } from '../utils/playerHelper';
 import { getPlayerSocialData } from './stores/friendshipStore';
 import { validateBody } from '../utils/validateBody';
+import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 
 const playerModule = new Module('player', {
     stores: [dbPlayers],
     queries: {
+
+        //Leaderboard Live Queries
+        getTopPlayers: async () => {
+            return new LiveData({
+                fetch: async () => {
+                    const players = await dbPlayers.fetch(
+                        {},
+                        { sort: { chiEarned: -1 }, limit: 100 }
+                    );
+                    return players.map(p => ({
+                        username: p.username,
+                        chiEarned: p.chiEarned,
+                    }));
+                },
+                watch: ({ publish }) => {
+                    const pipeline = [
+                        {
+                            $match: {
+                                operationType: { $in: ['update', 'replace'] },
+                                'updateDescription.updatedFields.chiEarned': { $exists: true },
+                            },
+                        },
+                    ];
+                    const changeStream = dbPlayers.watch(pipeline);
+                    changeStream.on('change', () => publish());
+                    return () => changeStream.close();
+                },
+            });
+        },
 
         // Auth & Profile Refersh ────────────────────────────────────────────────
         async getMe({ includeSocial }: { includeSocial: boolean }, { req }) {
@@ -268,6 +298,38 @@ const playerModule = new Module('player', {
                 return throwError((error as Error).message);
             }
 
+        },
+
+        async levelUp(args, { req }) {
+            try {
+                const { walletAddress } = req.user;
+
+                // Find player in the database
+                const player = await dbPlayers.findOne({ walletAddress });
+                if (!player) {
+                    return throwError("Player not found");
+                }
+
+                const nextLevel = player.level + 1;
+
+                const nextLevelConfig = LEVEL_CONFIG[nextLevel];
+
+                if (player.chi < nextLevelConfig.upgradeCost) {
+                    return throwError("Insufficient CHI Balance");
+                }
+
+                await await dbPlayers.updateOne(
+                    { walletAddress },
+                    {
+                        chi: player.chi - nextLevelConfig.upgradeCost,
+                        level: nextLevel
+                    }
+                );
+
+                return successResponse({}, "Player Unlocked New Level successfully");
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
         }
 
     },
