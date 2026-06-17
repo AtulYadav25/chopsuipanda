@@ -11,7 +11,7 @@ const gameSessionModule = new Module('gameSession', {
 
     },
     mutations: {
-        async startGameSession(args, { req }) {
+        async startGameSession(_, { req }) {
             try {
                 let { walletAddress } = requirePlayer(req);
 
@@ -53,7 +53,7 @@ const gameSessionModule = new Module('gameSession', {
             }
         },
 
-        async continuteGameSession(args, { req }) {
+        async continuteGameSession(_, { req }) {
             try {
                 let { walletAddress } = requirePlayer(req);
 
@@ -97,10 +97,10 @@ const gameSessionModule = new Module('gameSession', {
 
                 // Increment continues if it's less than 10
                 if (player.continues <= 10) {
-                    const newData = {
-                        ...userData,
-                        isGamePause: false
-                    };
+                    // const newData = {
+                    //     ...userData,
+                    //     isGamePause: false
+                    // };
                     // TODO 
                     // await redisClient.set(`user:${walletAddress}`, JSON.stringify(newData));
 
@@ -117,7 +117,7 @@ const gameSessionModule = new Module('gameSession', {
             }
         },
 
-        async endGameSession(args, { req }) {
+        async endGameSession(_, { req }) {
             try {
                 const { walletAddress } = requirePlayer(req);
 
@@ -140,10 +140,10 @@ const gameSessionModule = new Module('gameSession', {
 
 
                 // TODO
-                let newData = {
-                    ...userData,
-                    isGamePause: true,
-                }
+                // let newData = {
+                //     ...userData,
+                //     isGamePause: true,
+                // }
                 if (userData.score > 15) {
                     calculatedchi = calculatePlayerScore(userData.score, userData.gameType)
                 }

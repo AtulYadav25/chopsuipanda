@@ -47,7 +47,7 @@ const playerModule = new Module('player', {
             });
         },
 
-        // Auth & Profile Refersh ────────────────────────────────────────────────
+        // Auth & Profile Refersh ───────────────────────────────────────────────
         async getMe({ includeSocial }: { includeSocial: boolean }, { req }) {
             try {
                 const { walletAddress } = requirePlayer(req);
@@ -143,7 +143,7 @@ const playerModule = new Module('player', {
 
 
 
-        // Auth & Profile Refersh ────────────────────────────────────────────────
+        // Auth & Profile Refersh ───────────────────────────────────────────────
 
 
         /*
@@ -162,9 +162,8 @@ const playerModule = new Module('player', {
                 const messageBytes = new Uint8Array(message);
 
                 // Verify signature
-                let verifiedPublicKey;
                 try {
-                    verifiedPublicKey = await verifyPersonalMessageSignature(messageBytes, signature, {
+                    await verifyPersonalMessageSignature(messageBytes, signature, {
                         address: walletAddress,
                     });//Verify the Message is valid, also verifying the message is valid for given address
                 } catch (err) {
@@ -253,7 +252,7 @@ const playerModule = new Module('player', {
             try {
                 const { walletAddress } = requirePlayer(req);
 
-                const { success, data, error } = validateBody(z.object({
+                const { success, data } = validateBody(z.object({
                     username: z
                         .string()
                         .min(3)
@@ -300,7 +299,7 @@ const playerModule = new Module('player', {
 
         },
 
-        async levelUp(args, { req }) {
+        async levelUp(_, { req }) {
             try {
                 const { walletAddress } = req.user;
 
