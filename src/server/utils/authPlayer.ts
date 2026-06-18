@@ -1,10 +1,11 @@
 import { Request } from 'express';
 import { throwError } from './responsHandler';
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import configModule from '../modules/configModule';
+import { PlayerAuthToken, verifyJWTToken } from './jwtHelper';
 
 
-export const requirePlayer = (req: Request): { walletAddress: string } => {
+export const requirePlayer = (req: Request): PlayerAuthToken => {
     try {
         const sessionCookie = req.headers.cookie;
 
@@ -27,21 +28,10 @@ export const requirePlayer = (req: Request): { walletAddress: string } => {
         }
 
         // Verify the Privy access token
-        const decoded = jwt.verify(token, configModule.getConfig('JWT_SECRET'));
+        const decoded = verifyJWTToken<PlayerAuthToken>(token, configModule.getConfig('JWT_SECRET'));
 
-        if (!decoded) {
-            return throwError("Token Expired, Connect Wallet Again!");
-        }
-
-
-        return {
-            walletAddress: (decoded as any).walletAddress
-        }
-
-
+        return decoded
     } catch (error) {
-        console.error('Error fetching authenticated user:', error);
-        throwError((error as Error).message)
-        return { walletAddress: "error" }
+        return throwError((error as Error).message)
     }
 };

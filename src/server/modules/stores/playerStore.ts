@@ -10,7 +10,7 @@ const powerUpSchema = schema.object({
 });
 
 const notificationSchema = schema.object({
-    type: schema.enum(['reward', 'friend_request', 'system']),
+    type: schema.enum(['reward', 'friend_request', 'system', 'referral_reward']),
     message: schema.string(),
     token: schema.string().optional(),
     isRead: schema.boolean(),

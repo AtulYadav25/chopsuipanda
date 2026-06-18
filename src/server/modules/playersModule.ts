@@ -13,6 +13,7 @@ import { getRewardForDay, generateUniqueUsername } from '../utils/playerHelper';
 import { getPlayerSocialData } from './stores/friendshipStore';
 import { validateBody } from '../utils/validateBody';
 import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
+import { generateJWTToken, PlayerAuthToken } from '../utils/jwtHelper';
 
 const playerModule = new Module('player', {
     stores: [dbPlayers],
@@ -202,7 +203,7 @@ const playerModule = new Module('player', {
                 const tenDaysInSeconds = time.days(10);
                 const tenDaysInMilliseconds = tenDaysInSeconds * 1000;
 
-                const token = jwt.sign(
+                const token = generateJWTToken<PlayerAuthToken>(
                     { time: Date.now(), walletAddress },
                     configModule.getConfig('JWT_SECRET'),
                     {
@@ -210,7 +211,16 @@ const playerModule = new Module('player', {
                     }
                 );
 
-                const socketToken = jwt.sign(
+                // TODO : Remvoe this comment
+                // const socketToken = jwt.sign(
+                //     { time: Date.now(), walletAddress },
+                //     configModule.getConfig('JWT_SECRET'),
+                //     {
+                //         expiresIn: tenDaysInSeconds,
+                //     }
+                // );
+
+                const socketToken = generateJWTToken<PlayerAuthToken>(
                     { time: Date.now(), walletAddress },
                     configModule.getConfig('JWT_SECRET'),
                     {
