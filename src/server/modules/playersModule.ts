@@ -14,6 +14,20 @@ import { getPlayerSocialData } from './stores/friendshipStore';
 import { validateBody } from '../utils/validateBody';
 import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 import { generateJWTToken, PlayerAuthToken } from '../utils/jwtHelper';
+import { dbChiTransactions } from './stores/chiTransactionStore';
+import { TRANSACTION } from '@/shared/constants/chiTransaction';
+import {
+    ChestReward,
+    ChestType,
+    getChestRewardTable,
+    getChestCost,
+    DAILY_CHEST_OPEN_LIMIT,
+    DAILY_WINDOW_MS,
+    CHEST_OPENING_HISTORY_SIZE,
+    OpenChestArgs,
+    getChestTierProbabilities,
+} from '@/shared/constants/ChestConfig';
+import { pickReward } from '../utils/chestHelper';
 
 const playerModule = new Module('player', {
     stores: [dbPlayers],
@@ -46,6 +60,24 @@ const playerModule = new Module('player', {
                     return () => changeStream.close();
                 },
             });
+        },
+
+        async checkAuth(_, { req }) {
+            try {
+                const { walletAddress } = requirePlayer(req);
+                if (walletAddress) {
+                    const player = await dbPlayers.findOne({ walletAddress });
+                    if (player) {
+                        return successResponse({}, "Authenticated");
+                    } else {
+                        return throwError("Invalid Access");
+                    }
+                }
+
+                return throwError("Invalid Access");
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
         },
 
         // Auth & Profile Refersh ───────────────────────────────────────────────
@@ -141,6 +173,295 @@ const playerModule = new Module('player', {
     mutations: {
 
 
+        async openChest(args: OpenChestArgs, { req }) {
+            try {
+                const { walletAddress } = requirePlayer(req);
+                const { chestDetails } = args;
+                const { type: chestType, qty: chestQty } = chestDetails;
+
+                const player = await dbPlayers.findOne({ walletAddress });
+                if (!player) {
+                    return throwError("Player Not Found");
+                }
+
+                const openingsInLastDay = player.chestOpenings.filter((timestamp) => {
+                    return new Date(timestamp).getTime() >= Date.now() - DAILY_WINDOW_MS;
+                });
+
+                if (openingsInLastDay.length >= DAILY_CHEST_OPEN_LIMIT) {
+                    return throwError("Daily Limit Reached");
+                }
+
+                const rewardTable = getChestRewardTable(chestType);
+                const costPerChest = getChestCost(chestType);
+                const totalCost = chestQty * costPerChest;
+
+                if (player.chi < totalCost) {
+                    return throwError("Insufficient CHI Balance");
+                }
+
+                const { base, climb } = getChestTierProbabilities(chestType);
+                const rewardsReceived: ChestReward[] = Array.from(
+                    { length: chestQty },
+                    () => pickReward(rewardTable, base, climb)
+                );
+
+                //Updating Player chest openings array
+                const updatedChestOpenings = [
+                    ...(player.chestOpenings || []),
+                    ...Array.from({ length: chestQty }, () => new Date()),
+                ].slice(-CHEST_OPENING_HISTORY_SIZE);
+
+                if (chestType === 'treasure') {
+                    const totalChiAwarded = rewardsReceived.reduce(
+                        (sum, reward) => sum + reward.amount,
+                        0
+                    );
+
+                    await dbPlayers.updateOne({ walletAddress }, {
+                        chi: player.chi - totalCost + totalChiAwarded,
+                        chestOpenings: updatedChestOpenings,
+                    });
+                } else {
+                    // Royal chests pay out SUI off-chain via a Redis-queued payout,
+                    // settled later by a cron job — not credited to `chi` directly.
+                    await dbPlayers.updateOne({ walletAddress }, {
+                        chi: player.chi - totalCost,
+                        chestOpenings: updatedChestOpenings,
+                    });
+
+                    // TODO
+                    // await queueSuiPayout(walletAddress, rewardsReceived);
+                }
+
+                return successResponse({ rewardsReceived }, "Chest Opened Successfully");
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
+        },
+
+        // Alice shares referral code ABC123
+        // Bob enters ABC123
+
+        // Alice = Referrer
+        // Bob = Referee (Referred User)
+        async applyReferral(args, { req }) {
+            try {
+                const { walletAddress } = req.user;
+                const { referrerUsername } = args as { referrerUsername: string };
+
+                if (!walletAddress || !referrerUsername) {
+                    return throwError("Referrer username is required");
+                }
+
+                const player = await dbPlayers.findOne({ walletAddress });
+                if (!player) {
+                    return throwError("Player not found");
+                }
+                if (player.referredBy != null) {
+                    return throwError("Referral already used");
+                }
+                if (player.username === referrerUsername) {
+                    return throwError("You cannot refer yourself");
+                }
+
+                const referrer = await dbPlayers.findOne({ username: referrerUsername });
+                if (!referrer) {
+                    return throwError("Referral code is invalid");
+                }
+                if (
+                    referrer._id.equals(player._id) ||
+                    referrer.referredBy?.equals(player._id)
+                ) {
+                    return throwError("Players are already connected");
+                }
+
+                const now = new Date();
+
+                if (player.referredBy) {
+                    return throwError("Referral already used");
+                }
+
+                // Atomic claim: only succeeds if referredBy is still null,
+                // closing the race-condition window between check and write
+                await dbPlayers.updateOne(
+                    { walletAddress },
+                    { $inc: { chi: 3000 }, $set: { referredBy: referrer._id, updatedAt: now } }
+                );
+
+                // From here on, the referral is "claimed" — if anything below fails,
+                // log it for reconciliation rather than leaving the user stuck,
+                // since we can't roll back the claim without a transaction.
+                try {
+                    await dbPlayers.updateOne({ _id: referrer._id }, { $inc: { chi: 1000 }, $set: { updatedAt: now } });
+
+                    await dbChiTransactions.insertMany([
+                        {
+                            ownerWalletAddress: walletAddress,
+                            chiAmount: 3000,
+                            type: TRANSACTION.REFERRAL_REWARD,
+                            status: "success",
+                            message: `Referrer is ${referrer.username}`,
+                            createdAt: now,
+                            updatedAt: now,
+                        },
+                        {
+                            ownerWalletAddress: referrer.walletAddress,
+                            chiAmount: 1000,
+                            type: TRANSACTION.REFERRAL_REWARD,
+                            status: "success",
+                            message: `Referred by ${player.username}`,
+                            createdAt: now,
+                            updatedAt: now,
+                        },
+                    ]);
+                } catch (innerError) {
+                    // TODO: send to error tracking (Sentry, etc.) with player/referrer IDs
+                    // so a human can reconcile chi/transaction-log mismatches
+                    console.error("applyReferral: partial failure after claim", {
+                        playerId: player._id,
+                        referrerId: referrer._id,
+                        error: innerError,
+                    });
+                }
+
+                await Promise.allSettled([
+                    dbPlayers.updateOne(
+                        { _id: referrer._id },
+                        {
+                            $push: {
+                                notifications: {
+                                    $each: [{
+                                        type: "referral_reward",
+                                        message: `You earned 1,000 chi by referring ${player.name}. Keep up the good work!`,
+                                        token: "",
+                                        isRead: false,
+                                        createdAt: new Date(),
+                                    }],
+                                    $position: 0,
+                                    $slice: 60,
+                                },
+                            },
+                        }
+                    ),
+                    dbPlayers.updateOne(
+                        { _id: player._id },
+                        {
+                            $push: {
+                                notifications: {
+                                    $each: [{
+                                        type: "referral_reward",
+                                        message: `You received 3,000 chi for using a referral code from ${referrer.name}. Enjoy your reward!`,
+                                        token: "",
+                                        isRead: false,
+                                        createdAt: new Date(),
+                                    }],
+                                    $position: 0,
+                                    $slice: 60,
+                                },
+                            },
+                        }
+                    ),
+                ]);
+
+                return successResponse({}, "Referral Applied");
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
+        },
+
+        async continueDailyStreak(_, { req }) {
+            try {
+                const { walletAddress } = requirePlayer(req);
+
+                const player = await dbPlayers.findOne({ walletAddress });
+
+                if (!player) {
+                    return throwError("Player Not Found");
+                }
+
+                const today = new Date();
+                const todayDateKey = today.toISOString().split("T")[0];
+
+                const lastClaimDate = player.dailyStreak?.lastLogin
+                    ? new Date(player.dailyStreak.lastLogin)
+                    : null;
+
+                const lastClaimDateKey = lastClaimDate?.toISOString().split("T")[0];
+
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                const yesterdayDateKey = yesterday.toISOString().split("T")[0];
+
+                const isStreakAlreadyActive =
+                    !lastClaimDate ||
+                    lastClaimDateKey === todayDateKey ||
+                    lastClaimDateKey === yesterdayDateKey;
+
+                if (isStreakAlreadyActive) {
+                    return throwError("Streak is not broken or already claimed today");
+                }
+
+                const currentStreakCount = player.dailyStreak?.currentStreak || 0;
+
+                const streakRestoreCost =
+                    (Math.floor(currentStreakCount / 4) + 1) * 5000;
+
+                const currentChiBalance = player.chi || 0;
+
+                if (currentChiBalance < streakRestoreCost) {
+                    return throwError("Insufficient CHI Balance");
+                }
+
+                const updatedStreakCount = currentStreakCount + 1;
+                const remainingChiBalance = currentChiBalance - streakRestoreCost;
+
+                await dbPlayers.findOneAndUpdate(
+                    { walletAddress },
+                    {
+                        $set: {
+                            "dailyStreak.lastLogin": today,
+                            "dailyStreak.currentStreak": updatedStreakCount,
+                            chi: remainingChiBalance,
+                        },
+                    }
+                );
+
+                return successResponse<{
+                    newStreak: number;
+                    remainingChi: number;
+                }>(
+                    {
+                        newStreak: updatedStreakCount,
+                        remainingChi: remainingChiBalance,
+                    },
+                    `Streak continued by paying ${streakRestoreCost} CHI`
+                );
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
+        },
+
+
+        async disconnectWallet(_, { req, res }) {
+            try {
+
+                requirePlayer(req);
+                res.cookie("token", null, {
+                    expires: new Date(Date.now()),
+                    httpOnly: true,
+                });
+
+                res.cookie("socketToken", null, {
+                    expires: new Date(Date.now()),
+                    httpOnly: true,
+                });
+
+                return successResponse({}, "Wallet Disconnected");
+            } catch (error) {
+                return throwError((error as Error).message);
+            }
+        },
 
 
 
