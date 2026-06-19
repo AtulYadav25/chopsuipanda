@@ -8,3 +8,5 @@ export const GAME_TYPES = {
 export const GameTypeSchema = z.nativeEnum(GAME_TYPES);
 
 export type GameType = z.infer<typeof GameTypeSchema>;
+
+export const GAME_TYPE_VALUES = Object.values(GAME_TYPES) as [GameType, ...GameType[]];

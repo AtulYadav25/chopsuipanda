@@ -41,7 +41,9 @@ const gameSessionModule = new Module('gameSession', {
                     { walletAddress },
                     {
                         $set: {
-                            continues: 0
+                            continues: 0,
+                            gameStartedAt: new Date(),
+                            hasPendingContinue: false
                         }
                     }
                 );
@@ -92,6 +94,7 @@ const gameSessionModule = new Module('gameSession', {
                     { walletAddress },
                     {
                         chi: (player.chi - (player.continues * 5000)),
+                        hasPendingContinue: false,
                     }
                 );
 
@@ -152,7 +155,12 @@ const gameSessionModule = new Module('gameSession', {
                 // await redisClient.set(`user:${walletAddress}`, JSON.stringify(newData));
                 // liveGames.set(walletAddress, newData)
 
-                await dbPlayers.updateOne({ walletAddress }, { chiEarned: calculatedchi + player.chiEarned, chi: player.chi + calculatedchi, continues: player.continues + 1 })
+                await dbPlayers.updateOne({ walletAddress }, {
+                    chiEarned: calculatedchi + player.chiEarned,
+                    chi: player.chi + calculatedchi,
+                    continues: player.continues + 1,
+                    hasPendingContinue: true
+                })
 
                 // TODO : I think i can use modelence live query instead of this websockets subscriber, 
                 // but i need to figure out that modelence live query must be for top ranked players

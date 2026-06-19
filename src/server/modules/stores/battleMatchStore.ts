@@ -1,3 +1,4 @@
+import { GAME_TYPE_VALUES } from '@/shared/constants/GameTypes';
 import { schema, Store } from 'modelence/server';
 
 // ─── Battle Match Store ───────────────────────────────────────────────────────
@@ -17,7 +18,7 @@ export const battleMatchSchema = {
         walletAddress: schema.string(),
     }),
 
-    gameMode: schema.number(),
+    gameMode: schema.enum(GAME_TYPE_VALUES),
 
     wagerAmount: schema.number(),
 

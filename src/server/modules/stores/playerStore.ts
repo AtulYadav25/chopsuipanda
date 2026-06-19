@@ -10,7 +10,7 @@ const powerUpSchema = schema.object({
 });
 
 const notificationSchema = schema.object({
-    type: schema.enum(['reward', 'friend_request', 'system', 'referral_reward']),
+    type: schema.enum(['reward', 'friend_request', 'system', 'referral_reward', 'wager_result']),
     message: schema.string(),
     token: schema.string().optional(),
     isRead: schema.boolean(),
@@ -35,7 +35,7 @@ export const playerSchema = {
     currentScore: schema.number(),
 
     // Active game session
-    gameStartedAt: schema.date().optional(),
+    gameStartedAt: schema.date().optional(), //Probably we dont need this really..
     hasPendingContinue: schema.boolean(),
     continues: schema.number(),     // Max 3; enforced in app logic
 
