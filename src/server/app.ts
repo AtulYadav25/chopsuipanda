@@ -4,7 +4,7 @@ import configModule from './modules/configModule';
 import weeklyRewardModule from './modules/weeklyRewardModule';
 import battleMatchModule from './modules/battleMatchModule';
 import friendshipModule from './modules/friendshipModule';
-import gameSessionModule from './modules/gameSessionModule';
+import chopsuipandaModule from './modules/chopsuipandaModule';
 import suiModule from './modules/suiModule';
 import chiTransactionModule from './modules/chiTransactionModule';
 
@@ -16,7 +16,7 @@ startApp({
         battleMatchModule,
         friendshipModule,
         chiTransactionModule,
-        gameSessionModule,
+        chopsuipandaModule,
         suiModule,
     ]
 });

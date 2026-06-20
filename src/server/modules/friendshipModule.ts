@@ -3,6 +3,7 @@ import { dbFriendships } from './stores/friendshipStore';
 import { dbPlayers } from './stores/playerStore';
 import { successResponse, throwError } from '../utils/responsHandler';
 import { requirePlayer } from '../utils/authPlayer';
+import { notifyFriendRequest } from './methods/games/notifications';
 
 const friendshipModule = new Module('weeklyReward', {
     stores: [dbFriendships],
@@ -115,7 +116,15 @@ const friendshipModule = new Module('weeklyReward', {
                     message = "Friend request rejected";
                 }
 
-                // TODO : Use Live Query / WebSockets to send notifications of these
+                if (accepted) {
+                    notifyFriendRequest({
+                        toUserId: requestingPlayer._id.toString(),
+                        fromUsername: respondingPlayer.username,
+                        friendRequestId: existingFriendship?._id?.toString(),
+                        type: 'friendRequestAccepted'
+                    })
+                }
+
 
                 return successResponse({}, message);
 

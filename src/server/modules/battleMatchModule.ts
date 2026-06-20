@@ -2,7 +2,7 @@ import { Module, ObjectId } from 'modelence/server'
 import { dbBattleMatches } from './stores/battleMatchStore';
 import { validateBody } from '../utils/validateBody';
 import { z } from 'zod'
-import { GAME_TYPE_VALUES } from '@/shared/constants/GameTypes';
+import { GAME_TYPE_VALUES, GAME_TYPES } from '@/shared/constants/GameTypes';
 import { BattleMatch, SendBattleChallenge, sendBattleChallengeSchema } from '@/shared/schemas/battleMatch.schema';
 import { requirePlayer } from '../utils/authPlayer';
 import { successResponse, throwError } from '../utils/responsHandler';
@@ -10,6 +10,8 @@ import { dbPlayers } from './stores/playerStore';
 import { getAvailableGames } from '@/shared/constants/LevelConfig';
 import { dbChiTransactions } from './stores/chiTransactionStore';
 import { TRANSACTION } from '@/shared/constants/chiTransaction';
+import { getSession } from './stores/liveGameCache';
+import { notifyBattle } from './methods/games/notifications';
 
 const battleMatchModule = new Module('battleMatch', {
     stores: [dbBattleMatches],
@@ -151,8 +153,12 @@ const battleMatchModule = new Module('battleMatch', {
                     updatedAt: new Date(),
                 });
 
-                // TODO: Use live query to push battle challenge notification to friend
-                // sendNotification('battleChallenge', friendPlayer.walletAddress, `...`, newBattle._id);
+                notifyBattle({
+                    toWalletAddress: friendPlayer.walletAddress,
+                    fromUsername: currentPlayer.username,
+                    type: 'battleChallenge',
+                    challengeId: newBattle._id.toString()
+                });
 
                 return successResponse<{
                     timestamp: Date,
@@ -294,7 +300,7 @@ const battleMatchModule = new Module('battleMatch', {
 
         async submitBattleScore(args: { battleId: string }, { req }) {
             try {
-                const { walletAddress } = requirePlayer(req);
+                const { walletAddress, userId } = requirePlayer(req);
                 const { battleId } = args;
 
                 if (!battleId) {
@@ -322,11 +328,9 @@ const battleMatchModule = new Module('battleMatch', {
                 }
 
                 // ─── Fetch Player Score ───────────────────────────────────────────
-                // TODO: Replace with Redis session score
-                // const redisData = await redisClient.get(`user:${walletAddress}`);
-                // if (!redisData) return throwError("Invalid session");
-                // const { score: playerScore } = JSON.parse(redisData);
-                const playerScore = 55; // placeholder
+                const userData = getSession(userId);
+                if (!userData) return throwError("Invalid session");
+                const playerScore = userData.gameType === GAME_TYPES.KNIFE_HIT ? userData.knifeScore : userData.treeScore;
 
                 // ─── Challenger Submits First ─────────────────────────────────────
                 if (isChallenger) {
@@ -346,7 +350,7 @@ const battleMatchModule = new Module('battleMatch', {
 
                 // ─── Opponent Submits — Resolve Battle ────────────────────────────
                 const challengerScore = activeBattle.challenger.score;
-                const opponentScore = playerScore;
+                const opponentScore = playerScore!;
                 const isDraw = challengerScore === opponentScore;
 
                 const winner = isDraw
@@ -454,6 +458,21 @@ const battleMatchModule = new Module('battleMatch', {
                         }]
                     )
                 ]);
+
+                notifyBattle({
+                    toWalletAddress: loser!.walletAddress,
+                    fromUsername: winner!.username,
+                    type: 'battleResult',
+                    isWinner: true,
+                    challengeId: battleId
+                });
+                notifyBattle({
+                    toWalletAddress: loser!.walletAddress,
+                    fromUsername: winner!.username,
+                    type: 'battleResult',
+                    isWinner: false,
+                    challengeId: battleId
+                });
 
                 return successResponse<{
                     winner: string,

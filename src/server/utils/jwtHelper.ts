@@ -21,6 +21,7 @@ export const verifyJWTToken = <T extends object>(token: string, secret: string) 
 
 export type PlayerAuthToken = {
     walletAddress: string;
+    userId: string;
     time: number;
 }
 

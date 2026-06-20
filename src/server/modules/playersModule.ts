@@ -1,4 +1,4 @@
-import { LiveData, Module } from 'modelence/server'
+import { createSession, dbUsers, LiveData, Module, setSessionUser } from 'modelence/server'
 import { time } from 'modelence'
 import { z } from 'zod'
 import { dbPlayers } from './stores/playerStore';
@@ -30,7 +30,7 @@ import {
 import { pickReward } from '../utils/chestHelper';
 
 const playerModule = new Module('player', {
-    stores: [dbPlayers],
+    stores: [],
     queries: {
 
         //Leaderboard Live Queries
@@ -316,8 +316,6 @@ const playerModule = new Module('player', {
                         },
                     ]);
                 } catch (innerError) {
-                    // TODO: send to error tracking (Sentry, etc.) with player/referrer IDs
-                    // so a human can reconcile chi/transaction-log mismatches
                     console.error("applyReferral: partial failure after claim", {
                         playerId: player._id,
                         referrerId: referrer._id,
@@ -472,7 +470,7 @@ const playerModule = new Module('player', {
         @authPlayer
         Used to register new players Or Refresh Auth Tokens
         */
-        async authPlayer({ walletAddress, message, signature }: any, { res }) {
+        async authPlayer({ walletAddress, message, signature }: any, { res, session }) {
             try {
 
 
@@ -501,6 +499,9 @@ const playerModule = new Module('player', {
                     const username = await generateUniqueUsername();
 
                     player = await dbPlayers.create({
+                        status: "active",
+                        handle: username,
+                        authMethods: {},
                         walletAddress,
                         username,   // temp username, they'll set it in onboarding
                         chi: 0,
@@ -525,24 +526,7 @@ const playerModule = new Module('player', {
                 const tenDaysInMilliseconds = tenDaysInSeconds * 1000;
 
                 const token = generateJWTToken<PlayerAuthToken>(
-                    { time: Date.now(), walletAddress },
-                    configModule.getConfig('JWT_SECRET'),
-                    {
-                        expiresIn: tenDaysInSeconds,
-                    }
-                );
-
-                // TODO : Remvoe this comment
-                // const socketToken = jwt.sign(
-                //     { time: Date.now(), walletAddress },
-                //     configModule.getConfig('JWT_SECRET'),
-                //     {
-                //         expiresIn: tenDaysInSeconds,
-                //     }
-                // );
-
-                const socketToken = generateJWTToken<PlayerAuthToken>(
-                    { time: Date.now(), walletAddress },
+                    { time: Date.now(), walletAddress, userId: player._id.toString() },
                     configModule.getConfig('JWT_SECRET'),
                     {
                         expiresIn: tenDaysInSeconds,
@@ -553,16 +537,18 @@ const playerModule = new Module('player', {
                 res.cookie("token", token, {
                     httpOnly: true,
                     secure: true, // Only over HTTPS
-                    sameSite: "None",
+                    sameSite: "strict",
                     maxAge: tenDaysInMilliseconds,
+                    path: '/'
                 });
 
-                // ✅ Set socketToken cookie for 10 days // TODO: Probably we might not need this socketToken
-                res.cookie("socketToken", socketToken, {
+                // ✅ Set socketToken as (authToken) cookie for 10 days (This is customized auth instead of modelence auth)
+                res.cookie('authToken', token, {
                     httpOnly: true,
-                    secure: true, // Only over HTTPS
-                    sameSite: "None",
+                    secure: true,
+                    sameSite: 'strict',
                     maxAge: tenDaysInMilliseconds,
+                    path: '/',
                 });
 
                 successResponse<{ isNewUser: boolean, player: PlayerPublic }>(

@@ -1,4 +1,4 @@
-import { schema, Store } from 'modelence/server';
+import { dbUsers, schema, Store } from 'modelence/server';
 
 // ─── Sub-schemas ──────────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ export const playerSchema = {
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const dbPlayers = new Store('players', {
+export const dbPlayers = dbUsers.extend({
     schema: playerSchema,
 
     indexes: [
