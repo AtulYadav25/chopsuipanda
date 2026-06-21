@@ -1,0 +1,17 @@
+import { createClientModule } from 'modelence/client';
+
+import type friendshipModule from '@/server/modules/friendshipModule';
+import type playerModule from '@/server/modules/playersModule';
+import type battleMatchModule from '@/server/modules/battleMatchModule';
+import suiModule from '@/server/modules/suiModule';
+import chopsuipandaModule from '@/server/modules/chopsuipandaModule';
+
+export const playerClientModule = createClientModule<typeof playerModule>('players');
+
+export const friendshipClientModule = createClientModule<typeof friendshipModule>('friendship');
+
+export const battleMatchClientModule = createClientModule<typeof battleMatchModule>('battleMatch');
+
+export const suiClientModule = createClientModule<typeof suiModule>('sui');
+
+export const chopsuipandaClientModule = createClientModule<typeof chopsuipandaModule>('chopsuipanda');

@@ -234,7 +234,7 @@ const playerModule = new Module('player', {
                     // await queueSuiPayout(walletAddress, rewardsReceived);
                 }
 
-                return successResponse({ rewardsReceived }, "Chest Opened Successfully");
+                return successResponse<ChestReward[]>(rewardsReceived, "Chest Opened Successfully");
             } catch (error) {
                 return throwError((error as Error).message);
             }

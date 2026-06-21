@@ -17,7 +17,7 @@ const battleMatchModule = new Module('battleMatch', {
     stores: [dbBattleMatches],
     queries: {
 
-        async getMyActiveBattles(args, { req }) {
+        async getMyActiveBattles(_, { req }) {
             try {
                 const { walletAddress } = requirePlayer(req);
 
@@ -224,6 +224,8 @@ const battleMatchModule = new Module('battleMatch', {
 
                 const timestamp = new Date();
 
+
+                // TODO : Probably we dont need this, because the gameStart functions handles it
                 await dbPlayers.updateOne(
                     { walletAddress },
                     {

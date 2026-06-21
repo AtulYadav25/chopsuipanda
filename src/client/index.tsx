@@ -4,20 +4,25 @@ import { toast } from 'react-hot-toast';
 import { RouterProvider } from 'react-router-dom';
 
 import { router } from './router';
-import favicon from './assets/favicon.svg';
+// import favicon from './assets/favicon.svg';
 import './index.css';
 import LoadingSpinner from './components/LoadingSpinner';
+
+import { dAppKit } from './dapp-kit';
+import { DAppKitProvider } from '@mysten/dapp-kit-react';
 
 renderApp({
   routesElement: (
     <Suspense fallback={<LoadingSpinner fullScreen />}>
-      <RouterProvider router={router} />
+      <DAppKitProvider dAppKit={dAppKit}>
+        <RouterProvider router={router} />
+      </DAppKitProvider>
     </Suspense>
   ),
   errorHandler: (error) => {
     toast.error(error.message);
   },
   loadingElement: <LoadingSpinner fullScreen />,
-  favicon
+  // favicon
 });
 

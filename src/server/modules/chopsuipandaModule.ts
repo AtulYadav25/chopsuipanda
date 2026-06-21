@@ -47,7 +47,7 @@ export default new Module('chopsuiPanda', {
         chopTree,
 
         //Continue Game
-        async contiueGame(args, { req }) {
+        async contiueGame(_, { req }) {
             try {
                 let { walletAddress, userId } = requirePlayer(req);
 

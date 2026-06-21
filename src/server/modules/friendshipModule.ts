@@ -5,7 +5,7 @@ import { successResponse, throwError } from '../utils/responsHandler';
 import { requirePlayer } from '../utils/authPlayer';
 import { notifyFriendRequest } from './methods/games/notifications';
 
-const friendshipModule = new Module('weeklyReward', {
+const friendshipModule = new Module('friendship', {
     stores: [dbFriendships],
     queries: {
 
