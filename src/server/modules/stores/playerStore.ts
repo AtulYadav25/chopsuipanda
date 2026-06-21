@@ -2,13 +2,6 @@ import { dbUsers, schema, Store } from 'modelence/server';
 
 // ─── Sub-schemas ──────────────────────────────────────────────────────────────
 
-const powerUpSchema = schema.object({
-    type: schema.string(),       // e.g. "shield", "doubleChi"
-    name: schema.string(),
-    cost: schema.number(),
-    validUntil: schema.date().optional(),  // null = permanent power-up
-});
-
 const notificationSchema = schema.object({
     type: schema.enum(['reward', 'friend_request', 'system', 'referral_reward', 'wager_result']),
     message: schema.string(),
@@ -51,9 +44,6 @@ export const playerSchema = {
     // Daily chest openings (10/day limit)
     chestOpenings: schema.array(
         schema.date()),
-
-    // In-game items
-    powerUps: schema.array(powerUpSchema),
 
     // Notifications (keep last 50 in app logic via $slice)
     notifications: schema.array(notificationSchema),

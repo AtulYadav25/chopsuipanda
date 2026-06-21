@@ -1,9 +1,22 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { playerClientModule } from "../modules";
+import { usePlayerActions } from "../store/usePlayerStore";
+import { typedMutationFn, typedQueryFn } from "./apiResponse";
+import { PlayerPublic } from "@/shared/schemas/player.schema";
 
 
 export function useAuthPlayer() {
-    return useMutation(playerClientModule.mutation('authPlayer'));
+    const { setPlayer } = usePlayerActions();
+    return useMutation({
+        ...playerClientModule.mutation('authPlayer'),
+        mutationFn: typedMutationFn<{ player: PlayerPublic; isNewUser: boolean }>(
+            playerClientModule.mutation('authPlayer')
+        ),
+        onSuccess: (res) => {
+            setPlayer(res.data.player);
+        },
+    });
 }
 
 export function useOpenChest() {
@@ -37,5 +50,27 @@ export function useCheckAuth() {
 }
 
 export function useRefreshPlayerProfile({ includeSocial }: { includeSocial: boolean }) {
-    return useQuery(playerClientModule.query('getMe', { includeSocial }));
+    const { setPlayer, mergePlayer } = usePlayerActions();
+
+    const query = useQuery({
+        ...playerClientModule.query('getMe', { includeSocial }),
+        queryFn: typedQueryFn<PlayerPublic>(
+            playerClientModule.query('getMe', { includeSocial })
+        ),
+    });
+
+    useEffect(() => {
+        if (query.data) {
+            const incoming = query.data.data;
+            const { friends, friendRequestsReceived, ...rest } = query.data.data;
+
+            if (includeSocial) {
+                setPlayer(incoming);
+            } else {
+                mergePlayer(rest); // only updates what server returned, preserves friends
+            }
+        }
+    }, [query.data, includeSocial]);
+
+    return query;
 }

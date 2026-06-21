@@ -3,13 +3,6 @@ import { createFriendshipSchema, friendDetailsSchema } from './friendship.schema
 
 // ─── Sub-schemas ──────────────────────────────────────────────────────────────
 
-export const powerUpSchema = z.object({
-    type: z.string(), // e.g. "shield", "doubleChi"
-    name: z.string(),
-    cost: z.number(),
-    validUntil: z.date().optional(), // undefined = permanent power-up
-});
-
 export const notificationSchema = z.object({
     type: z.enum(['reward', 'friend_request', 'system']),
     message: z.string(),
@@ -55,9 +48,6 @@ export const playerSchema = z.object({
     // Daily chest openings
     chestOpenings: z.array(z.date()),
 
-    // In-game items
-    powerUps: z.array(powerUpSchema),
-
     // Notifications
     notifications: z.array(notificationSchema),
 
@@ -72,7 +62,6 @@ export const playerPublicSchema = playerSchema.pick({
     level: true,
     dailyStreak: true,
     chestOpenings: true,
-    powerUps: true,
     notifications: true,
     createdAt: true,
     updatedAt: true,
@@ -85,5 +74,4 @@ export const playerPublicSchema = playerSchema.pick({
 // Type inference
 export type Player = z.infer<typeof playerSchema>;
 export type PlayerPublic = z.infer<typeof playerPublicSchema>;
-export type PowerUp = z.infer<typeof powerUpSchema>;
 export type Notification = z.infer<typeof notificationSchema>;

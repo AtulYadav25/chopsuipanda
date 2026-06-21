@@ -514,7 +514,6 @@ const playerModule = new Module('player', {
                         sessionId: 'something', // TODO : Update this to current session id
                         dailyStreak: { currentStreak: 1, lastLogin: new Date() },
                         chestOpenings: [],
-                        powerUps: [],
                         notifications: [],
                         createdAt: new Date(),
                         updatedAt: new Date(),
