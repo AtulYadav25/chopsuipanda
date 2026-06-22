@@ -4,6 +4,6 @@ import { createBrowserRouter } from "react-router-dom";
 export const router = createBrowserRouter([
   {
     path: '/',
-    Component: lazy(() => import('./pages/HomePage'))
+    Component: lazy(() => import('./pages/RootPage'))
   },
 ]);

@@ -12,15 +12,7 @@ import { ServerChannel } from 'modelence/server';
 import configModule from '../configModule';
 import { PlayerAuthToken } from '@/server/utils/jwtHelper';
 import jwt from 'jsonwebtoken'
-
-export type NotificationType = 'friendRequestSent' | 'friendRequestAccepted' | 'battleChallenge' | 'battleResult';
-
-export interface NotificationPayload {
-    type: NotificationType;
-    message: string;
-    /** id of the related entity, e.g. the friend request id or challenge id */
-    referenceId: string;
-}
+import { NotificationPayload } from '@/shared/schemas/channels/notification.schema';
 
 const notificationServerChannel = new ServerChannel<NotificationPayload>('notifications', async ({ session }) => {
     // Only authenticated users can join

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { renderApp } from 'modelence/client';
+import { renderApp, startWebsockets } from 'modelence/client';
 import { toast } from 'react-hot-toast';
 import { RouterProvider } from 'react-router-dom';
 
@@ -10,6 +10,13 @@ import LoadingSpinner from './components/LoadingSpinner';
 
 import { dAppKit } from './dapp-kit';
 import { DAppKitProvider } from '@mysten/dapp-kit-react';
+import notificationClientChannel from './channels/notificationClientChannel';
+import gameEventClientChannel from './channels/gameEventClientChannel';
+
+startWebsockets({
+  channels: [notificationClientChannel, gameEventClientChannel],
+});
+
 
 renderApp({
   routesElement: (
