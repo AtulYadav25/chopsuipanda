@@ -10,16 +10,16 @@ export function useExpireSession() {
     return useMutation(chopsuipandaClientModule.mutation('expireSession'));
 }
 
-export function useKnifeSessionStart() {
-    return useMutation(chopsuipandaClientModule.mutation('knifeSessionStart'));
+export function useBambooShootSessionStart() {
+    return useMutation(chopsuipandaClientModule.mutation('bambooShootSessionStart'));
 }
 
-export function useThrowKnife() {
-    return useMutation(chopsuipandaClientModule.mutation('throwKnife'));
+export function useThrowBamboo() {
+    return useMutation(chopsuipandaClientModule.mutation('throwBamboo'));
 }
 
-export function useTreeSessionStart() {
-    return useMutation(chopsuipandaClientModule.mutation('treeSessionStart'));
+export function useTreeChopSessionStart() {
+    return useMutation(chopsuipandaClientModule.mutation('treeChopSessionStart'));
 }
 
 export function useChopTree() {

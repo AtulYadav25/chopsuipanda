@@ -20,10 +20,12 @@ export const homeAssets = {
 
 // ─── Intro + Loading Screen ───────────────────────────────────────────────────
 export const introAssets = {
-    chiBar: () => import('./chi.webp'),
+    chi: () => import('./chi.webp'),
     chopsuiPandaLogo: () => import('./home/chopPanda.webp'),
     suiBackground: () => import('./suiBackground.webp'),
     suiPandaLoading: () => import('./coinsmash.webp'),
+    sadPanda: () => import('./home/sadPanda.webp'),
+    happyPanda: () => import('./home/happyPanda.webp'),
 };
 
 // ─── Menu / Icon Bar ─────────────────────────────────────────────────────────
@@ -62,23 +64,22 @@ export const shopAssets = {
 
 // ─── Game Mode Selection ──────────────────────────────────────────────────────
 export const gameModeAssets = {
-    miniSlash: () => import('./home/miniSlash.webp'),
-    miniKnife: () => import('./home/miniKnife.webp'),
-    miniChop: () => import('./home/miniChop.webp'),
-    knifeGame: () => import('./home/knifeH.webp'),
-    treeChop: () => import('./home/treeChop.webp'),
+    bambooShootGameLogo: () => import('./home/miniKnife.webp'),
+    treeChopGameLogo: () => import('./home/miniChop.webp'),
+    bambooShootGameBg: () => import('./home/knifeH.webp'),
+    treeChopBg: () => import('./home/treeChop.webp'),
 };
 
 // ─── Tutorial Screens ─────────────────────────────────────────────────────────
 // Tree-chop tutorial
-export const treeTutorialAssets = {
+export const treeChopTutorialAssets = {
     tut1: () => import('./tutorial/TreeGame/treeTutor1.png'),
     tut2: () => import('./tutorial/TreeGame/treeTutor2.png'),
     tut3: () => import('./tutorial/TreeGame/treeTutor3.png'),
 };
 
-// Knife-hit tutorial
-export const knifeTutorialAssets = {
+// BambooShoot tutorial
+export const bambooShootTutorialAssets = {
     tut1: () => import('./tutorial/BambooGame/knifetutor1.png'),
     tut2: () => import('./tutorial/BambooGame/knifetutor2.png'),
     tut3: () => import('./tutorial/BambooGame/knifetutor3.png'),

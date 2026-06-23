@@ -27,7 +27,7 @@ export function useOnboardPlayer() {
     return useMutation(playerClientModule.mutation('onboardPlayer'));
 }
 
-export function useDisconnectWallet() {
+export function useDisconnectWalletBackend() {
     return useMutation(playerClientModule.mutation('disconnectWallet'));
 }
 

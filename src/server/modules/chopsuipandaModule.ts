@@ -2,7 +2,7 @@
 //
 // Wires everything together: stores, channels, mutations, and the
 // continueGame HTTP route. This is the single registration point Modelence
-// needs — no separate `initializeSocket`/`initializeKnifeGameEvents`-style
+// needs — no separate `initializeSocket`/`initializebambooGameEvents`-style
 // manual wiring required, since channel join/leave and auth are handled
 // internally by Modelence once channels are listed here.
 
@@ -13,8 +13,8 @@ import notificationServerChannel from './channels/notificationServerChannel';
 import gameServerChannel from './channels/gameServerChannel';
 
 import { registerSession, expireSession } from './methods/games/sessionLifecycle';
-import { knifeSessionStart, throwKnife } from './methods/games/knifeGame';
-import { treeSessionStart, chopTree } from './methods/games/treeGame';
+import { bambooShootSessionStart, throwBamboo } from './methods/games/knifeGame';
+import { treeChopSessionStart, chopTree } from './methods/games/treeGame';
 import { Context, HttpContext } from 'modelence/types';
 import { requirePlayer } from '../utils/authPlayer';
 import { dbPlayers } from './stores/playerStore';
@@ -38,12 +38,12 @@ export default new Module('chopsuiPanda', {
             return expireSession(ctx);
         },
 
-        // Knife game
-        knifeSessionStart,
-        throwKnife,
+        // bamboo game
+        bambooShootSessionStart,
+        throwBamboo,
 
         // Tree game
-        treeSessionStart,
+        treeChopSessionStart,
         chopTree,
 
         //Continue Game
@@ -135,7 +135,7 @@ export default new Module('chopsuiPanda', {
                 }
 
                 let calculatedchi = 0;
-                let toUpdateScore = userData.gameType === GAME_TYPES.CHOP_TREE ? userData.treeScore : userData.knifeScore;
+                let toUpdateScore = userData.gameType === GAME_TYPES.TREE_CHOP ? userData.treeChopScore : userData.bambooShootScore;
 
                 if ((toUpdateScore! as number) > 15) {
                     calculatedchi = calculatePlayerScore(toUpdateScore!, userData.gameType)

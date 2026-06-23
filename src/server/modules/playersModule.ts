@@ -1,20 +1,23 @@
-import { createSession, dbUsers, LiveData, Module, setSessionUser } from 'modelence/server'
+import { LiveData, Module } from 'modelence/server'
 import { time } from 'modelence'
 import { z } from 'zod'
 import { dbPlayers } from './stores/playerStore';
 import { verifyPersonalMessageSignature } from '@mysten/sui/verify';
-import jwt from "jsonwebtoken";
 import configModule from './configModule';
 import { successResponse, throwError } from '../utils/responsHandler';
-import { PlayerPublic, playerPublicSchema } from '@/shared/schemas/player.schema';
 import { requirePlayer } from '../utils/authPlayer';
 import { dbWeeklyRewards } from './stores/weeklyRewardStore';
-import { getRewardForDay, generateUniqueUsername } from '../utils/playerHelper';
+import { generateUniqueUsername } from '../utils/playerHelper';
 import { getPlayerSocialData } from './stores/friendshipStore';
 import { validateBody } from '../utils/validateBody';
-import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 import { generateJWTToken, PlayerAuthToken } from '../utils/jwtHelper';
 import { dbChiTransactions } from './stores/chiTransactionStore';
+import { pickReward } from '../utils/chestHelper';
+
+//Constants and Schemas
+import { PlayerPublic, playerPublicSchema } from '@/shared/schemas/player.schema';
+import { getRewardForDay } from '@/shared/constants/DailyLoginRewards';
+import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 import { TRANSACTION } from '@/shared/constants/chiTransaction';
 import {
     ChestReward,
@@ -27,7 +30,6 @@ import {
     OpenChestArgs,
     getChestTierProbabilities,
 } from '@/shared/constants/ChestConfig';
-import { pickReward } from '../utils/chestHelper';
 
 const playerModule = new Module('player', {
     stores: [],

@@ -1,5 +1,4 @@
 import { dbPlayers } from "../modules/stores/playerStore";
-import { dailyRewards, rewardOfDay } from "@/shared/constants/DailyLoginRewards";
 
 
 const LETTERS = "ABCEGYZUPQRTSFDHJKLNMWXV";
@@ -27,10 +26,3 @@ export const generateUniqueUsername = async (): Promise<string> => {
 
 
 
-
-export function getRewardForDay(day: number): rewardOfDay {
-    return day <= 7
-        ? dailyRewards[day - 1]
-        : { day, reward: 4000, rewardType: 'CHI' };
-
-}

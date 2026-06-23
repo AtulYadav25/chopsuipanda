@@ -332,7 +332,7 @@ const battleMatchModule = new Module('battleMatch', {
                 // ─── Fetch Player Score ───────────────────────────────────────────
                 const userData = getSession(userId);
                 if (!userData) return throwError("Invalid session");
-                const playerScore = userData.gameType === GAME_TYPES.KNIFE_HIT ? userData.knifeScore : userData.treeScore;
+                const playerScore = userData.gameType === GAME_TYPES.BAMBOO_SHOOT ? userData.bambooShootScore : userData.treeChopScore;
 
                 // ─── Challenger Submits First ─────────────────────────────────────
                 if (isChallenger) {

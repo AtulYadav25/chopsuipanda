@@ -4,12 +4,12 @@
 // in-memory cache (liveGameCache.ts) and the durable store (gameSessionStore.ts).
 import { GameType } from "@/shared/constants/GameTypes";
 
-export interface KnifeLevelData {
+export interface BambooShootLevelData {
     level: number;
     apples: number[];
-    preAttachedKnives: number[];
+    preAttachedBamboos: number[];
     variation?: number[];
-    throwableKnives: number;
+    throwableBamboos: number;
     changeTime: number;
     boss: {
         name: string | null;
@@ -29,13 +29,13 @@ export interface GameSession {
     isGamePaused: boolean;
     gameType: GameType
 
-    // Knife game fields
-    knifeStage?: number;
-    knifeScore?: number;
-    knifeLevelData?: KnifeLevelData;
+    // Bamboo Shoot game fields
+    bambooShootStage?: number;
+    bambooShootScore?: number;
+    bambooShootLevelData?: BambooShootLevelData;
 
     // Tree game fields
-    treeScore?: number;
-    treeBranches?: TreeBranch[];
-    treeLastTimeBonusSentAt?: number;
+    treeChopScore?: number;
+    treeChopBranches?: TreeBranch[];
+    treeChopLastTimeBonusSentAt?: number;
 }

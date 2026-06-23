@@ -8,11 +8,11 @@ export type LevelConfig = {
 export const LEVEL_CONFIG: Record<number, LevelConfig> = {
     1: {
         upgradeCost: 100,
-        unlocks: [GAME_TYPES.CHOP_TREE],
+        unlocks: [GAME_TYPES.TREE_CHOP],
     },
     2: {
         upgradeCost: 250,
-        unlocks: [GAME_TYPES.KNIFE_HIT],
+        unlocks: [GAME_TYPES.BAMBOO_SHOOT],
     },
     3: {
         upgradeCost: 500,

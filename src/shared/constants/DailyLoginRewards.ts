@@ -22,3 +22,35 @@ export const dailyRewards: dailyReward = [
     { day: 6, reward: 3000, rewardType: "CHI" },
     { day: 7, reward: 3600, rewardType: "CHI" },
 ];
+
+
+export function getRewardForDay(day: number): rewardOfDay {
+    return day <= 7
+        ? dailyRewards[day - 1]
+        : { day, reward: 4000, rewardType: 'CHI' };
+}
+
+export function getRewardsForClientUI(day: number): rewardOfDay[] {
+    return day <= 7 ? dailyRewards : [{ day, reward: 4000, rewardType: 'CHI' }];
+}
+
+export function isStreakMissed(
+    lastLogin: Date | null | undefined
+): boolean {
+    if (!lastLogin) {
+        return true; // no last login, consider streak missed
+    }
+
+    const last = new Date(lastLogin);
+    const today = new Date();
+
+    // Normalize both dates to midnight
+    last.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffInDays = Math.floor(
+        (today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    return diffInDays > 1;
+}

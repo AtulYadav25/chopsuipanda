@@ -1,32 +1,32 @@
-// src/server/utils/knifeLevelGenerator.ts
+// src/server/utils/bambooLevelGenerator.ts
 //
-// Pure level-generation logic for the knife game, extracted out of the old
-// KnifeSockets.js so it isn't tangled with socket/event code. Logic is
+// Pure level-generation logic for the bamboo game, extracted out of the old
+// bambooSockets.js so it isn't tangled with socket/event code. Logic is
 // unchanged from the original — only renamed and reformatted.
 
-import { KNIFE_GAME } from './gameConstants';
-import type { KnifeLevelData } from '../stores/types';
+import { BAMBOO_GAME } from './gameConstants';
+import type { BambooShootLevelData } from '../stores/types';
 
 /**
- * Generates a randomized "variation" array used by the knife game's
+ * Generates a randomized "variation" array used by the bamboo game's
  * difficulty curve. Originally written from a GPT prompt asking for an array
  * of floats in [1.0, 4.0] with a minimum spacing between values, optionally
  * skewed positive, negative, or mixed depending on stage number.
  */
 export function generateVariationArray(stageNumber: number): number[] {
     const { VARIATION_MIN, VARIATION_MAX, VARIATION_MIN_DIFF, VARIATION_LENGTH_MIN, VARIATION_LENGTH_MAX } =
-        KNIFE_GAME;
+        BAMBOO_GAME;
 
     const length =
         Math.floor(Math.random() * (VARIATION_LENGTH_MAX - VARIATION_LENGTH_MIN + 1)) + VARIATION_LENGTH_MIN;
 
     // Weighted mode selection: past a stage threshold, heavily favor "mixed"
     let mode: 'positive' | 'negative' | 'mixed';
-    if (stageNumber > KNIFE_GAME.VARIATION_HIGH_STAGE_THRESHOLD) {
+    if (stageNumber > BAMBOO_GAME.VARIATION_HIGH_STAGE_THRESHOLD) {
         const rand = Math.random();
-        if (rand < KNIFE_GAME.VARIATION_MIXED_CHANCE) {
+        if (rand < BAMBOO_GAME.VARIATION_MIXED_CHANCE) {
             mode = 'mixed';
-        } else if (rand < KNIFE_GAME.VARIATION_POSITIVE_CHANCE) {
+        } else if (rand < BAMBOO_GAME.VARIATION_POSITIVE_CHANCE) {
             mode = 'positive';
         } else {
             mode = 'negative';
@@ -38,7 +38,7 @@ export function generateVariationArray(stageNumber: number): number[] {
     const result: number[] = [];
     let attempts = 0;
 
-    while (result.length < length && attempts < KNIFE_GAME.VARIATION_MAX_GENERATION_ATTEMPTS) {
+    while (result.length < length && attempts < BAMBOO_GAME.VARIATION_MAX_GENERATION_ATTEMPTS) {
         attempts++;
 
         let value = parseFloat((Math.random() * (VARIATION_MAX - VARIATION_MIN) + VARIATION_MIN).toFixed(1));
@@ -69,30 +69,30 @@ function shuffle<T>(arr: T[]): T[] {
 
 /**
  * Generates the full level configuration (apples, pre-attached knives,
- * throwable knife count, etc.) for a given stage number.
+ * throwable bamboo count, etc.) for a given stage number.
  */
-export function generateKnifeLevelData(stageNumber: number): KnifeLevelData {
-    const level = Math.floor(stageNumber / KNIFE_GAME.STAGE_PER_LEVEL) + 1;
-    const availableAngles = [...KNIFE_GAME.ANGLE_POOL];
+export function generateBambooLevelData(stageNumber: number): BambooShootLevelData {
+    const level = Math.floor(stageNumber / BAMBOO_GAME.STAGE_PER_LEVEL) + 1;
+    const availableAngles = [...BAMBOO_GAME.ANGLE_POOL];
 
-    const maxItems = Math.min(KNIFE_GAME.MAX_ITEMS_CAP, Math.floor(level / 2) + 2);
+    const maxItems = Math.min(BAMBOO_GAME.MAX_ITEMS_CAP, Math.floor(level / 2) + 2);
     const appleCount = randomBetween(0, maxItems);
-    const preKnifeCount = randomBetween(0, 4);
+    const preBambooCount = randomBetween(0, 4);
 
     shuffle(availableAngles);
     const apples = availableAngles.splice(0, appleCount);
-    const preAttachedKnives = availableAngles.splice(0, preKnifeCount);
+    const preAttachedBamboos = availableAngles.splice(0, preBambooCount);
 
     return {
         level,
         apples,
-        preAttachedKnives,
+        preAttachedBamboos,
         variation: generateVariationArray(stageNumber),
-        throwableKnives: randomBetween(
-            level === 1 ? KNIFE_GAME.THROWABLE_KNIVES_LEVEL_1_MIN : KNIFE_GAME.THROWABLE_KNIVES_OTHER_MIN,
-            level === 1 ? KNIFE_GAME.THROWABLE_KNIVES_LEVEL_1_MAX : KNIFE_GAME.THROWABLE_KNIVES_OTHER_MAX
+        throwableBamboos: randomBetween(
+            level === 1 ? BAMBOO_GAME.THROWABLE_BAMBOOS_LEVEL_1_MIN : BAMBOO_GAME.THROWABLE_BAMBOOS_OTHER_MIN,
+            level === 1 ? BAMBOO_GAME.THROWABLE_BAMBOOS_LEVEL_1_MAX : BAMBOO_GAME.THROWABLE_BAMBOOS_OTHER_MAX
         ),
-        changeTime: randomBetween(KNIFE_GAME.CHANGE_TIME_MIN, KNIFE_GAME.CHANGE_TIME_MAX, true),
+        changeTime: randomBetween(BAMBOO_GAME.CHANGE_TIME_MIN, BAMBOO_GAME.CHANGE_TIME_MAX, true),
         boss: {
             name: null,
             type: null,
@@ -107,18 +107,18 @@ function normalizeAngle(angle: number): number {
 
 /**
  * Checks that none of the given angles fall within the forbidden zone
- * around 0 degrees (the "too close to the previous knife" zone).
+ * around 0 degrees (the "too close to the previous bamboo" zone).
  *
  * NOTE: kept the original comparison logic exactly as written. The
  * `>=` / `<=` pairing here behaves like "always true" for most inputs in
  * the original code too — flagging in case this was a pre-existing bug
  * you want to revisit, but not changing behavior in this migration.
  */
-export function isLegalKnifeHit(targetAngles: number[]): boolean {
+export function isLegalBambooHit(targetAngles: number[]): boolean {
     const hasForbiddenAngle = targetAngles.some((angle) => {
         const norm = normalizeAngle(angle);
         return (
-            norm >= normalizeAngle(-KNIFE_GAME.MIN_ANGLE_DEGREES) || norm <= normalizeAngle(KNIFE_GAME.MIN_ANGLE_DEGREES)
+            norm >= normalizeAngle(-BAMBOO_GAME.MIN_ANGLE_DEGREES) || norm <= normalizeAngle(BAMBOO_GAME.MIN_ANGLE_DEGREES)
         );
     });
 

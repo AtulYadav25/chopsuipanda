@@ -21,3 +21,7 @@ declare module '@mysten/dapp-kit-react' {
         dAppKit: typeof dAppKit;
     }
 }
+
+export const disConnectMyWallet = () => {
+    dAppKit.disconnectWallet();
+}

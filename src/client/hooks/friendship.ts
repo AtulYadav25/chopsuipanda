@@ -6,7 +6,7 @@ export function useSendFriendRequest() {
     return useMutation(friendshipClientModule.mutation('sendFriendRequest'));
 }
 
-export function useAcceptFriendRequest() {
+export function useRespontToFriendRequest() {
     return useMutation(friendshipClientModule.mutation('acceptFriendRequest'));
 }
 

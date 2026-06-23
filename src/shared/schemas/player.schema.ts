@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createFriendshipSchema, friendDetailsSchema } from './friendship.schema';
+import { friendDetailsSchema } from './friendship.schema';
 
 // ─── Sub-schemas ──────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ export const playerPublicSchema = playerSchema.pick({
     updatedAt: true,
 }).extend({
     friends: z.array(friendDetailsSchema),
-    friendRequestsReceived: z.array(createFriendshipSchema)
+    friendRequestsReceived: z.array(friendDetailsSchema)
 });
 
 

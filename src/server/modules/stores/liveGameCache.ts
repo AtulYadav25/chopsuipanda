@@ -4,7 +4,7 @@
 // This is the direct replacement for the old `liveGames` Map.
 //
 // Why keep an in-memory layer at all instead of reading Mongo every time?
-// throwKnife / chopTree fire frequently during active play, and a Mongo
+// throwbamboo / chopTree fire frequently during active play, and a Mongo
 // round-trip on every single one would add latency we don't need — the
 // old code already knew this, which is why it kept everything in `liveGames`
 // and only touched Redis as a backup/durability layer. We keep that shape,

@@ -1,9 +1,9 @@
 // src/server/utils/gameConstants.ts
 //
-// Magic numbers from the original KnifeSockets.js / TreeSockets.js, pulled
+// Magic numbers from the original bambooSockets.js / TreeSockets.js, pulled
 // out and named. Values are unchanged — this is a rename-only pass.
 
-export const KNIFE_GAME = {
+export const BAMBOO_GAME = {
     MIN_ANGLE_DEGREES: 10,
     VISIBLE_PARTS: 7,
 
@@ -22,14 +22,14 @@ export const KNIFE_GAME = {
     // generateLevelData
     STAGE_PER_LEVEL: 20,
     MAX_ITEMS_CAP: 4,
-    THROWABLE_KNIVES_LEVEL_1_MIN: 6,
-    THROWABLE_KNIVES_LEVEL_1_MAX: 10,
-    THROWABLE_KNIVES_OTHER_MIN: 8,
-    THROWABLE_KNIVES_OTHER_MAX: 13,
+    THROWABLE_BAMBOOS_LEVEL_1_MIN: 6,
+    THROWABLE_BAMBOOS_LEVEL_1_MAX: 10,
+    THROWABLE_BAMBOOS_OTHER_MIN: 8,
+    THROWABLE_BAMBOOS_OTHER_MAX: 13,
     CHANGE_TIME_MIN: 1.5,
     CHANGE_TIME_MAX: 2.6,
 
-    // throwKnife scoring
+    // throwbamboo scoring
     POINTS_PER_APPLE: 5,
     APPLE_HIT_ANGLE_TOLERANCE: 5, // added to MIN_ANGLE_DEGREES
 

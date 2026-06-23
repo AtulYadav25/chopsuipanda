@@ -16,15 +16,15 @@ const gameSessionStore = new Store('gameSessions', {
         isGamePaused: schema.boolean(),
         gameType: schema.enum(GAME_TYPE_VALUES),
 
-        // Knife game state
-        knifeStage: schema.number().optional(),
-        knifeScore: schema.number().optional(),
-        knifeLevelData: schema.object({
+        // Bamboo Shoot game state (bamboo Hit  = Bamboo Shoot Game)
+        bambooShootStage: schema.number().optional(),
+        bambooShootScore: schema.number().optional(),
+        bambooShootLevelData: schema.object({
             level: schema.number(),
             apples: schema.array(schema.number()),
-            preAttachedKnives: schema.array(schema.number()),
+            preAttachedBamboos: schema.array(schema.number()),
             variation: schema.array(schema.number()).optional(),
-            throwableKnives: schema.number(),
+            throwableBamboos: schema.number(),
             changeTime: schema.number(),
             boss: schema.object({
                 name: schema.string().nullable(),
@@ -35,13 +35,13 @@ const gameSessionStore = new Store('gameSessions', {
         }).optional(),
 
         // Tree game state
-        treeScore: schema.number().optional(),
-        treeBranches: schema.array(schema.object({
+        treeChopScore: schema.number().optional(),
+        treeChopBranches: schema.array(schema.object({
             type: schema.enum(['branch', 'scoreBonus', 'timeBonus']).nullable(),
             position: schema.enum(['left', 'right', 'none']),
             id: schema.number(),
         })).optional(),
-        treeLastTimeBonusSentAt: schema.number().optional(),
+        treeChopLastTimeBonusSentAt: schema.number().optional(),
 
         // Grace-period expiry after disconnect (see disconnect handler)
         expiresAt: schema.date().optional(),

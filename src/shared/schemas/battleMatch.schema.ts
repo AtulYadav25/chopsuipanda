@@ -4,6 +4,7 @@ import { GAME_TYPE_VALUES } from '@/shared/constants/GameTypes';
 // ─── Battle Match Zod Schema ──────────────────────────────────────────────────
 
 export const battleMatchSchema = z.object({
+    _id: z.string(),
     challenger: z.object({
         username: z.string(),
         score: z.number(),

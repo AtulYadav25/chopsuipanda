@@ -1,6 +1,6 @@
 // src/server/methods/games/treeGame.ts
 //
-// Migrated from TreeSockets.js. Same pattern as knifeGame.ts: socket events
+// Migrated from TreeSockets.js. Same pattern as bambooGame.ts: socket events
 // become mutations, per-user pushes become gameServerChannel broadcasts.
 //
 // As noted in the spec: chopTree is not called on every single chop — the
@@ -35,7 +35,7 @@ async function loadSession(userId: string): Promise<GameSession | null> {
 /**
  * Starts a new tree game session. Replaces socket event "tree-sessionStart".
  */
-export async function treeSessionStart(args: unknown, { req }: HttpContext) {
+export async function treeChopSessionStart(_: unknown, { req }: HttpContext) {
 
     const { userId } = requirePlayer(req);
 
@@ -54,10 +54,10 @@ export async function treeSessionStart(args: unknown, { req }: HttpContext) {
         ...existingSession,
         userId,
         isGamePaused: false,
-        treeScore: 0,
-        treeBranches: [...branches, ...newBranchesForClient],
-        treeLastTimeBonusSentAt: Date.now(),
-        gameType: GAME_TYPES.CHOP_TREE
+        treeChopScore: 0,
+        treeChopBranches: [...branches, ...newBranchesForClient],
+        treeChopLastTimeBonusSentAt: Date.now(),
+        gameType: GAME_TYPES.TREE_CHOP
     };
 
     await persistSession(userId, sessionData);
@@ -92,15 +92,15 @@ export async function chopTree(args: unknown, { req }: HttpContext) {
     if (session.isGamePaused) {
         throw new Error('Game Over');
     }
-    if (!session.treeBranches) {
+    if (!session.treeChopBranches) {
         throw new Error('No active branches');
     }
 
-    const currentBranches = [...session.treeBranches];
+    const currentBranches = [...session.treeChopBranches];
     const targetBranch = currentBranches.find((branch) => branch.id === clientBranchId);
     const position = targetBranch?.position ?? null;
     const type = targetBranch?.type ?? null;
-    const currentScore = session.treeScore ?? 0;
+    const currentScore = session.treeChopScore ?? 0;
 
     const isGameEndingChop = ((position === side && type !== 'scoreBonus') || side === 'nothing') && type !== 'timeBonus';
 
@@ -113,8 +113,8 @@ export async function chopTree(args: unknown, { req }: HttpContext) {
         const updatedSession: GameSession = {
             ...session,
             isGamePaused: true,
-            treeScore: currentScore + (scoringArray.length - 1),
-            treeBranches: slicedBranches,
+            treeChopScore: currentScore + (scoringArray.length - 1),
+            treeChopBranches: slicedBranches,
         };
 
         persistSession(userId, updatedSession);
@@ -124,20 +124,20 @@ export async function chopTree(args: unknown, { req }: HttpContext) {
     if (targetBranch?.type === 'scoreBonus') {
         const updatedSession: GameSession = {
             ...session,
-            treeScore: currentScore + 20,
+            treeChopScore: currentScore + 20,
         };
         persistSession(userId, updatedSession);
         return { success: true, message: 'Score Added' };
     }
 
     // Buffer running low — generate a fresh batch of branches.
-    const lastBranch = session.treeBranches[session.treeBranches.length - 1];
+    const lastBranch = session.treeChopBranches[session.treeChopBranches.length - 1];
     const { newBranches, timeBonusSentAt } = generateBranchRefill(
         lastBranch.id,
-        session.treeLastTimeBonusSentAt ?? Date.now()
+        session.treeChopLastTimeBonusSentAt ?? Date.now()
     );
 
-    const fullBranchList: TreeBranch[] = [...session.treeBranches, ...newBranches];
+    const fullBranchList: TreeBranch[] = [...session.treeChopBranches, ...newBranches];
 
     const divideIndex = fullBranchList.findIndex((branch) => branch.id === clientBranchId);
     const slicedBranches = divideIndex !== -1 ? fullBranchList.slice(divideIndex) : [...fullBranchList];
@@ -145,12 +145,12 @@ export async function chopTree(args: unknown, { req }: HttpContext) {
 
     const updatedSession: GameSession = {
         ...session,
-        treeScore: currentScore + scoringArray.length,
-        treeBranches: slicedBranches,
-        treeLastTimeBonusSentAt: timeBonusSentAt,
+        treeChopScore: currentScore + scoringArray.length,
+        treeChopBranches: slicedBranches,
+        treeChopLastTimeBonusSentAt: timeBonusSentAt,
     };
 
     persistSession(userId, updatedSession);
 
-    return { branches: newBranches, score: updatedSession.treeScore };
+    return { branches: newBranches, score: updatedSession.treeChopScore };
 }
