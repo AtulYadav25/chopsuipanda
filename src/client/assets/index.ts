@@ -21,6 +21,7 @@ export const homeAssets = {
 // ─── Intro + Loading Screen ───────────────────────────────────────────────────
 export const introAssets = {
     chi: () => import('./chi.webp'),
+    sui: () => import('./suicoin3.png'),
     chopsuiPandaLogo: () => import('./home/chopPanda.webp'),
     suiBackground: () => import('./suiBackground.webp'),
     suiPandaLoading: () => import('./coinsmash.webp'),
@@ -48,6 +49,8 @@ export const earnAssets = {
     suiChest: () => import('./MenuPage/suiChest.webp'),
     chiChest: () => import('./MenuPage/chiChest.webp'),
     suiWeek: () => import('./MenuPage/suiweek.webp'),
+    closedChest: () => import('./MenuPage/closedChest.webp'),
+    chest: () => import('./MenuPage/chest.webp')
 };
 
 // ─── Frens Page ───────────────────────────────────────────────────────────────

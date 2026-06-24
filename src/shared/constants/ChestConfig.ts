@@ -18,38 +18,44 @@ export interface OpenChestArgs {
 export interface ChestReward {
     amount: number;
     type: CurrencyType;
+    image: 'chi' | 'sui';
 }
 
-export type ChestType = 'treasure' | 'royal';
+export const ChestType = {
+    TREASURE: 'treasure',
+    ROYAL: 'royal',
+} as const;
+
+export type ChestType = typeof ChestType[keyof typeof ChestType];
 
 /** CHI rewards for a "treasure" chest, highest amount first. */
 export const TREASURE_CHEST_REWARDS: ChestReward[] = [
-    { amount: 100000, type: 'CHI' },
-    { amount: 50000, type: 'CHI' },
-    { amount: 20000, type: 'CHI' },
-    { amount: 15000, type: 'CHI' },
-    { amount: 12000, type: 'CHI' },
-    { amount: 8000, type: 'CHI' },
-    { amount: 5500, type: 'CHI' },
-    { amount: 4000, type: 'CHI' },
-    { amount: 2200, type: 'CHI' },
-    { amount: 1600, type: 'CHI' },
-    { amount: 1000, type: 'CHI' },
-    { amount: 700, type: 'CHI' },
+    { amount: 100000, type: 'CHI', image: 'chi' },
+    { amount: 50000, type: 'CHI', image: 'chi' },
+    { amount: 20000, type: 'CHI', image: 'chi' },
+    { amount: 15000, type: 'CHI', image: 'chi' },
+    { amount: 12000, type: 'CHI', image: 'chi' },
+    { amount: 8000, type: 'CHI', image: 'chi' },
+    { amount: 5500, type: 'CHI', image: 'chi' },
+    { amount: 4000, type: 'CHI', image: 'chi' },
+    { amount: 2200, type: 'CHI', image: 'chi' },
+    { amount: 1600, type: 'CHI', image: 'chi' },
+    { amount: 1000, type: 'CHI', image: 'chi' },
+    { amount: 700, type: 'CHI', image: 'chi' },
 ];
 
 /** SUI rewards for a "royal" chest, highest amount first. */
 export const ROYAL_CHEST_REWARDS: ChestReward[] = [
-    { amount: 8.0, type: 'SUI' },
-    { amount: 4.0, type: 'SUI' },
-    { amount: 2.0, type: 'SUI' },
-    { amount: 1.8, type: 'SUI' },
-    { amount: 0.9, type: 'SUI' },
-    { amount: 0.4, type: 'SUI' },
-    { amount: 0.2, type: 'SUI' },
-    { amount: 0.15, type: 'SUI' },
-    { amount: 0.1, type: 'SUI' },
-    { amount: 0.5, type: 'SUI' },
+    { amount: 8.0, type: 'SUI', image: 'sui' },
+    { amount: 4.0, type: 'SUI', image: 'sui' },
+    { amount: 2.0, type: 'SUI', image: 'sui' },
+    { amount: 1.8, type: 'SUI', image: 'sui' },
+    { amount: 0.9, type: 'SUI', image: 'sui' },
+    { amount: 0.4, type: 'SUI', image: 'sui' },
+    { amount: 0.2, type: 'SUI', image: 'sui' },
+    { amount: 0.15, type: 'SUI', image: 'sui' },
+    { amount: 0.1, type: 'SUI', image: 'sui' },
+    { amount: 0.5, type: 'SUI', image: 'sui' },
 ];
 
 // Previous SUI reward table, kept for reference / quick rollback.

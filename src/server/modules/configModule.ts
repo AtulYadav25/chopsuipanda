@@ -12,21 +12,22 @@ const configModule = new Module('config', {
             default: process.env.SERVER_WALLET_PRIVATE_KEY || '',
             isPublic: false,
         },
-        MODULE_NAME: {
-            type: 'secret',
-            default: process.env.MODULE_NAME || '',
-            isPublic: false,
-        },
         SUI_NETWORK: {
             type: 'secret',
             default: process.env.SUI_NETWORK || '',
             isPublic: false,
         },
         PACKAGE_ID: {
-            type: 'secret',
+            type: 'string',
             default: process.env.PACKAGE_ID || '',
-            isPublic: false,
+            isPublic: true,
         },
+        MODULE_NAME: {
+            type: 'string',
+            default: process.env.MODULE_NAME || '',
+            isPublic: true,
+        },
+
     },
     routes: [],
     rateLimits: [],
