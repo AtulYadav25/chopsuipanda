@@ -5,6 +5,7 @@ import SoundManager from "../utils/SoundManager";
 import EarnScreen from "./screens/EarnScreen";
 import FrensScreen from "./screens/FrensScreen";
 import HomeScreen from "./screens/HomeScreen";
+import ShopScreen from "./screens/ShopScreen";
 
 function RootPage() {
 
@@ -72,6 +73,7 @@ function RootPage() {
                 {page === 'home' && <HomeScreen />}
                 {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}
                 {page === 'frens' && <FrensScreen changePage={handleChangeMenuPage} />}
+                {page === 'shop' && <ShopScreen showConnectWallet={showConnectWallet} />}
             </ToastProvider>
         </MobileGameContainer>
     );
