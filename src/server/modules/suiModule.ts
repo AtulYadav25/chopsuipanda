@@ -20,7 +20,7 @@ const suiModule = new Module('sui', {
     mutations: {
 
         // Instead of decoding the message in smart contract, let player pay the amount and while verifying the digest i will check if correct amount is paid or not or let it go
-        async purchaseChi(args, { req }) {
+        async purchaseChi(args: { packId: number }, { req }) {
             try {
                 const { walletAddress } = requirePlayer(req);
                 const { packId } = args;
@@ -74,44 +74,70 @@ const suiModule = new Module('sui', {
             }
         },
 
-        async verifyDigest(args, { req }) {
+        async verifyDigest(args: { digest: string }, { req }) {
             try {
-                const { digest, token } = req.body;
+                const { digest } = args;
                 const { walletAddress } = req.user;
 
-                const MODULE_NAME = process.env.MODULE_NAME
-                // Find player in the database
+                const MODULE_NAME = process.env.MODULE_NAME;
                 const player = await dbPlayers.findOne({ walletAddress });
 
                 if (!player) {
                     return throwError("Player not found");
                 }
 
-                const decoded = verifyJWTToken<ChiPurchaseToken>(token, configModule.getConfig('JWT_SECRET'));
-                const expectedPayAmount = decoded?.costInMistToPay;
+                // Check duplicate tx first (cheap check before hitting blockchain)
+                const transactionExists = await dbChiTransactions.findOne({
+                    'payment.txDigest': digest
+                });
+                if (transactionExists) {
+                    return throwError("Transaction already verified");
+                }
 
-                // Verify the transaction on Sui blockchain
+                // Verify on-chain
                 const txVerifier = new SuiTransactionVerifier();
                 const txDetails = await txVerifier.verifyTransaction(digest, walletAddress.trim());
-
 
                 if (!txDetails.verified) {
                     return throwError("Transaction Not Verified");
                 }
 
+                // Extract token from PaymentMessageEvent emitted by smart contract
+                const messageEvent: any = txDetails.events.find((event: any) =>
+                    event.eventType.includes(`::${MODULE_NAME}::PaymentMessageEvent`)
+                );
 
-                // TODO : This has any type.. fix it if possible
+                if (!messageEvent?.json?.message) {
+                    return throwError("Payment message not found in transaction");
+                }
+
+                // message is emitted as vector<u8> — decode bytes back to JWT string
+                const tokenBytes: number[] = messageEvent.json.message;
+                const token = new TextDecoder().decode(new Uint8Array(tokenBytes));
+
+                // Decode and validate JWT
+                const decoded = verifyJWTToken<ChiPurchaseToken>(token, configModule.getConfig('JWT_SECRET'));
+
+                if (decoded?.walletAddress !== walletAddress) {
+                    return throwError("Token does not belong to this wallet");
+                }
+
+                const expectedPayAmount = decoded?.costInMistToPay;
+
+                // Verify paid amount from PaidToContract event
                 const purchaseEvent: any = txDetails.events.find((event: any) =>
                     event.eventType.includes(`::${MODULE_NAME}::PaidToContract`)
                 );
 
+                if (!purchaseEvent) {
+                    return throwError("Payment event not found in transaction");
+                }
 
-                //Fixpp Change the ::game::PowerupPurchased to ::game::payContract
                 const actualPaidAmount = Number(purchaseEvent.json.amount);
-
                 if (actualPaidAmount < Number(expectedPayAmount)) {
                     return throwError("Insufficient payment detected");
                 }
+
 
                 // TODO 
                 // const exists = await redisClient.exists(`tx:${digest}`);
@@ -180,8 +206,12 @@ const suiModule = new Module('sui', {
                         chiAmount: decoded.amount,
                         type: TRANSACTION.BUY_CHI,
                         referenceType: ' CHI_PACK',
-                        referenceId: decoded.packId,
+                        referenceId: String(decoded.packId),
                         status: "success",
+                        payment: {
+                            amountInMist: expectedPayAmount,
+                            txDigest: digest,
+                        },
                         message: `Purchased ${decoded.amount.toLocaleString()} CHI for ${mistToSui(expectedPayAmount)} SUI`,
                         createdAt: new Date(),
                         updatedAt: new Date()
