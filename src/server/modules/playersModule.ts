@@ -506,6 +506,7 @@ const playerModule = new Module('player', {
                         authMethods: {},
                         walletAddress,
                         username,   // temp username, they'll set it in onboarding
+                        usernameLower: username.toLowerCase(),
                         chi: 0,
                         chiEarned: 0,
                         merit: 0,
@@ -587,19 +588,21 @@ const playerModule = new Module('player', {
                 }
 
                 const { username } = data;
+                const usernameLower = username.toLowerCase();
 
-                //Check if the username already exist
-                const existingPlayer = await dbPlayers.findOne({ username })
+                // Check if the username already exists (case-insensitive)
+                const existingPlayer = await dbPlayers.findOne({ usernameLower });
 
                 if (existingPlayer) {
-                    return throwError("Username Already Exist")
+                    return throwError("Username Already Exist");
                 }
 
                 const updatedPlayer = await dbPlayers.findOneAndUpdate(
                     { walletAddress },
                     {
                         $set: {
-                            username: args.username,
+                            username,
+                            usernameLower,
                             updatedAt: new Date(),
                         }
                     }

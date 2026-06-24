@@ -69,7 +69,7 @@ const battleMatchModule = new Module('battleMatch', {
 
                 const [currentPlayer, friendPlayer] = await Promise.all([
                     dbPlayers.findOne({ walletAddress }),
-                    dbPlayers.findOne({ username: friendUsername }),
+                    dbPlayers.findOne({ usernameLower: friendUsername }),
                 ]);
 
                 if (!currentPlayer) return throwError("Player not found");

@@ -6,9 +6,10 @@
 // — see chat for why a screen string is more surface area than this needs.
 
 import { GAME_TYPES, GameType } from '@/shared/constants/GameTypes';
+import { BattleMatch } from '@/shared/schemas/battleMatch.schema';
 import { create } from 'zustand';
 
-export const PAGES = ['home', 'shop', 'frens', 'earn', 'leaderboard', 'tutorial', 'game', 'chestOpen'] as const;
+export const PAGES = ['home', 'shop', 'frens', 'earn', 'challengeFren', 'leaderboard', 'tutorial', 'game', 'chestOpen'] as const;
 export type Page = (typeof PAGES)[number];
 
 interface GameplayState {
@@ -16,11 +17,13 @@ interface GameplayState {
     page: Page;
     gameMode: GameType;
     isGameSoundOn: boolean;
+    battleDetails: BattleMatch | null;
     setIsPlaying: (isPlaying: boolean) => void;
     setPage: (page: Page) => void;
     showConnectWallet: () => void;
     setGameMode: (gameMode: GameType) => void;
     setIsGameSoundOn: (isGameSoundOn: boolean) => void;
+    setBattleDetails: (battleDetails: BattleMatch) => void;
 }
 
 export const useGameplayStore = create<GameplayState>((set) => ({
@@ -28,6 +31,7 @@ export const useGameplayStore = create<GameplayState>((set) => ({
     page: 'home',
     gameMode: GAME_TYPES.IDLE,
     isGameSoundOn: false,
+    battleDetails: null,
     setIsPlaying: (isPlaying) => set({ isPlaying }),
     setPage: (page) => set({ page }),
     showConnectWallet: () => {
@@ -35,6 +39,7 @@ export const useGameplayStore = create<GameplayState>((set) => ({
     },
     setGameMode: (gameMode: GameType) => set({ gameMode }),
     setIsGameSoundOn: (isGameSoundOn: boolean) => set({ isGameSoundOn }),
+    setBattleDetails: (battleDetails: BattleMatch) => set({ battleDetails }),
 }));
 
 

@@ -17,7 +17,7 @@ const friendshipModule = new Module('friendship', {
 
             try {
                 const requestingPlayer = await dbPlayers.findOne({ walletAddress });
-                const targetPlayer = await dbPlayers.findOne({ username: friendUserName });
+                const targetPlayer = await dbPlayers.findOne({ usernameLower: friendUserName });
 
                 if (!requestingPlayer || !targetPlayer) {
                     return throwError("Player not found");
@@ -68,7 +68,7 @@ const friendshipModule = new Module('friendship', {
                 const { walletAddress } = requirePlayer(req);
 
                 const respondingPlayer = await dbPlayers.findOne({ walletAddress });
-                const requestingPlayer = await dbPlayers.findOne({ username: friendUserName });
+                const requestingPlayer = await dbPlayers.findOne({ usernameLower: friendUserName });
 
                 if (!respondingPlayer || !requestingPlayer) {
                     return throwError("Player not found");
@@ -133,14 +133,14 @@ const friendshipModule = new Module('friendship', {
             }
         },
 
-        async deleteFriend(args, { req }) {
+        async deleteFriend(args: { friendUserName: string }, { req }) {
             try {
                 const { friendUserName } = args;
                 const { walletAddress } = requirePlayer(req);
 
                 // Fetch both users
                 const player = await dbPlayers.findOne({ walletAddress });
-                const friend = await dbPlayers.findOne({ username: friendUserName });
+                const friend = await dbPlayers.findOne({ usernameLower: friendUserName });
 
                 if (!player || !friend) {
                     return throwError("Player or Friend not found");

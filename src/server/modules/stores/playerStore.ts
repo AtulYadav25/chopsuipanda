@@ -15,6 +15,7 @@ const notificationSchema = schema.object({
 export const playerSchema = {
     // Identity
     username: schema.string(),
+    usernameLower: schema.string(),
     walletAddress: schema.string(),
     referredBy: schema.objectId().optional(),   // ObjectId of referring player
 
@@ -60,6 +61,7 @@ export const dbPlayers = dbUsers.extend({
     indexes: [
         { key: { walletAddress: 1 }, unique: true },
         { key: { username: 1 }, unique: true },
+        { key: { usernameLower: 1 }, unique: true },
         { key: { chiEarned: -1 } },       // Leaderboard ranking
         { key: { sessionId: 1 } },         // Weekly reset queries
         { key: { referredBy: 1 }, sparse: true },

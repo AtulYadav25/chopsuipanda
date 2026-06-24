@@ -11,8 +11,9 @@ export const generateUniqueUsername = async (): Promise<string> => {
             .toString()
             .padStart(4, "0")}${LETTERS[Math.floor(Math.random() * LETTERS.length)]
             }`;
+        const lowerUsername = username.toLowerCase();
 
-        const existingUsername = await dbPlayers.findOne({ username });
+        const existingUsername = await dbPlayers.findOne({ usernameLower: lowerUsername });
 
         if (!existingUsername) {
             return username;
