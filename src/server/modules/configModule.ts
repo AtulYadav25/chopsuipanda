@@ -27,7 +27,11 @@ const configModule = new Module('config', {
             default: process.env.MODULE_NAME || '',
             isPublic: true,
         },
-
+        OBJECT_ID: {
+            type: 'string',
+            default: process.env.OBJECT_ID || '',
+            isPublic: true,
+        },
     },
     routes: [],
     rateLimits: [],

@@ -5,6 +5,7 @@ import type playerModule from '@/server/modules/playersModule';
 import type battleMatchModule from '@/server/modules/battleMatchModule';
 import suiModule from '@/server/modules/suiModule';
 import chopsuipandaModule from '@/server/modules/chopsuipandaModule';
+import configModule from '@/server/modules/configModule';
 
 export const playerClientModule = createClientModule<typeof playerModule>('players');
 
@@ -15,3 +16,5 @@ export const battleMatchClientModule = createClientModule<typeof battleMatchModu
 export const suiClientModule = createClientModule<typeof suiModule>('sui');
 
 export const chopsuipandaClientModule = createClientModule<typeof chopsuipandaModule>('chopsuipanda');
+
+export const configClientModule = createClientModule<typeof configModule>('config');

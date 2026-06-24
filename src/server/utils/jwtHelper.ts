@@ -27,7 +27,7 @@ export type PlayerAuthToken = {
 
 export type ChiPurchaseToken = {
     walletAddress: string;
-    packId: string;
+    packId: number;
     message: string;
     amount: number; //Amount of CHI to be received
     costInMistToPay: number; // SUI MIST to pay

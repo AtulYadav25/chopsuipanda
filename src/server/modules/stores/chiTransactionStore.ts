@@ -34,6 +34,7 @@ export const dbChiTransactions = new Store('chiTransactions', {
     indexes: [
         { key: { ownerWalletAddress: 1 } },
         { key: { status: 1 } },
+        { key: { 'payment.txDigest': 1 } },
     ],
 });
 
