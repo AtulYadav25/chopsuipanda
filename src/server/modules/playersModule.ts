@@ -15,7 +15,7 @@ import { dbChiTransactions } from './stores/chiTransactionStore';
 import { pickReward } from '../utils/chestHelper';
 
 //Constants and Schemas
-import { PlayerPublic, playerPublicSchema } from '@/shared/schemas/player.schema';
+import { LeaderboardEntry, PlayerPublic, playerPublicSchema } from '@/shared/schemas/player.schema';
 import { getRewardForDay } from '@/shared/constants/DailyLoginRewards';
 import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 import { TRANSACTION } from '@/shared/constants/chiTransaction';
@@ -38,12 +38,13 @@ const playerModule = new Module('player', {
         //Leaderboard Live Queries
         getTopPlayers: async () => {
             return new LiveData({
-                fetch: async () => {
+                fetch: async (): Promise<LeaderboardEntry[]> => {
                     const players = await dbPlayers.fetch(
                         {},
-                        { sort: { chiEarned: -1 }, limit: 100 }
+                        { sort: { chiEarned: -1 }, limit: 50 }
                     );
-                    return players.map(p => ({
+                    return players.map((p, index) => ({
+                        rank: index + 1,
                         username: p.username,
                         chiEarned: p.chiEarned,
                     }));

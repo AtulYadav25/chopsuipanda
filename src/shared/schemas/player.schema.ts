@@ -75,3 +75,10 @@ export const playerPublicSchema = playerSchema.pick({
 export type Player = z.infer<typeof playerSchema>;
 export type PlayerPublic = z.infer<typeof playerPublicSchema>;
 export type Notification = z.infer<typeof notificationSchema>;
+
+
+export type LeaderboardEntry = {
+    rank: number;
+    username: string;
+    chiEarned: number;
+};
