@@ -1,7 +1,9 @@
 import MobileGameContainer from "../components/MobileGameContainer";
 import { ToastProvider, useToast } from "../context/ToastContext";
+import { useRefreshPlayerProfile } from "../hooks/player";
 import { Page, useGameplayStore } from "../store/useGameplayStore";
 import SoundManager from "../utils/SoundManager";
+import BattleFrenGame from "./screens/BattleScreens/BattleFrenGame";
 import EarnScreen from "./screens/EarnScreen";
 import FrensScreen from "./screens/FrensScreen";
 import HomeScreen from "./screens/HomeScreen";
@@ -22,6 +24,9 @@ function RootPage() {
         setPage('home');
         showToast({ type: 'info', message: 'Please Connect Wallet' })
     }
+
+    //Mutations & Queries
+    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: false });
 
     //Navbar Helpers
     const handleChangeMenuPage = (page: Page) => {
@@ -68,6 +73,12 @@ function RootPage() {
         });
     };
 
+    const handleEndGame = () => {
+        setPage('home');
+        refreshPlayerProfile();
+        handleChangeMenuPage('home');
+    }
+
     return (
         <MobileGameContainer>
             <ToastProvider>
@@ -76,6 +87,7 @@ function RootPage() {
                 {page === 'frens' && <FrensScreen changePage={handleChangeMenuPage} />}
                 {page === 'shop' && <ShopScreen showConnectWallet={showConnectWallet} />}
                 {page === 'leaderboard' && <LeaderBoardScreen />}
+                {page === 'battleFren' && <BattleFrenGame handleEndGame={handleEndGame} />}
             </ToastProvider>
         </MobileGameContainer>
     );

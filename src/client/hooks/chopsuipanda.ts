@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { chopsuipandaClientModule } from "../modules";
 
 
@@ -32,4 +32,8 @@ export function useContiueGame() {
 
 export function useEndGameSession() {
     return useMutation(chopsuipandaClientModule.mutation('endGameSession'));
+}
+
+export function useCheckPingPong() {
+    return useQuery(chopsuipandaClientModule.query('checkPingPong'));
 }

@@ -24,6 +24,19 @@ export interface TreeBranch {
     id: number;
 }
 
+export const TREE_CHOP_BRANCH_TYPE = {
+    BRANCH: 'branch',
+    SCORE_BONUS: 'scoreBonus',
+    TIME_BONUS: 'timeBonus',
+    NONE: null,
+} as const;
+
+export const TREE_CHOP_BRANCH_POSITION = {
+    LEFT: 'left',
+    RIGHT: 'right',
+    NONE: 'none',
+} as const;
+
 export interface GameSession {
     userId: string;
     isGamePaused: boolean;

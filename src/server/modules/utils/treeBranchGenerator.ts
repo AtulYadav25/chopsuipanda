@@ -4,7 +4,7 @@
 // TreeSockets.js. Logic unchanged from the original — renamed only.
 
 import { TREE_GAME } from './gameConstants';
-import type { TreeBranch } from '../stores/types';
+import { TREE_CHOP_BRANCH_POSITION, TREE_CHOP_BRANCH_TYPE, type TreeBranch } from '../stores/types';
 
 /**
  * Generates a single random branch outcome for a given branch id, using a
@@ -13,11 +13,11 @@ import type { TreeBranch } from '../stores/types';
  */
 export function generateRandomBranch(id: number): TreeBranch {
     const options: TreeBranch[] = [
-        { type: 'branch', position: 'left', id },
-        { type: 'branch', position: 'right', id },
-        { type: null, position: 'none', id },
-        { type: 'scoreBonus', position: 'left', id },
-        { type: 'scoreBonus', position: 'right', id },
+        { type: TREE_CHOP_BRANCH_TYPE.BRANCH, position: TREE_CHOP_BRANCH_POSITION.LEFT, id },
+        { type: TREE_CHOP_BRANCH_TYPE.BRANCH, position: TREE_CHOP_BRANCH_POSITION.RIGHT, id },
+        { type: TREE_CHOP_BRANCH_TYPE.NONE, position: TREE_CHOP_BRANCH_POSITION.NONE, id },
+        { type: TREE_CHOP_BRANCH_TYPE.SCORE_BONUS, position: TREE_CHOP_BRANCH_POSITION.LEFT, id },
+        { type: TREE_CHOP_BRANCH_TYPE.SCORE_BONUS, position: TREE_CHOP_BRANCH_POSITION.RIGHT, id },
     ];
 
     const weights = TREE_GAME.DIRECTION_WEIGHTS;
@@ -43,8 +43,8 @@ export function generateRandomBranch(id: number): TreeBranch {
  */
 export function generateInitialBranches(): { branches: TreeBranch[]; newBranchesForClient: TreeBranch[] } {
     const branches: TreeBranch[] = Array.from({ length: TREE_GAME.INITIAL_EMPTY_BRANCH_COUNT }, (_, i) => ({
-        type: null,
-        position: 'none',
+        type: TREE_CHOP_BRANCH_TYPE.NONE,
+        position: TREE_CHOP_BRANCH_POSITION.NONE,
         id: i + 1,
     }));
 
@@ -54,8 +54,8 @@ export function generateInitialBranches(): { branches: TreeBranch[]; newBranches
     }
 
     newBranchesForClient.push({
-        type: 'timeBonus',
-        position: 'right',
+        type: TREE_CHOP_BRANCH_TYPE.TIME_BONUS,
+        position: TREE_CHOP_BRANCH_POSITION.RIGHT,
         id: TREE_GAME.TIME_BONUS_BRANCH_ID_OFFSET,
     });
 
@@ -80,8 +80,8 @@ export function generateBranchRefill(
     let timeBonusSentAt = lastTimeBonusSentAt;
     if (Date.now() - lastTimeBonusSentAt >= TREE_GAME.TIME_BONUS_INTERVAL_MS) {
         newBranches.push({
-            type: 'timeBonus',
-            position: Math.random() < 0.5 ? 'left' : 'right',
+            type: TREE_CHOP_BRANCH_TYPE.TIME_BONUS,
+            position: Math.random() < 0.5 ? TREE_CHOP_BRANCH_POSITION.LEFT : TREE_CHOP_BRANCH_POSITION.RIGHT,
             id: newBranches[newBranches.length - 1].id + 1,
         });
         timeBonusSentAt = Date.now();

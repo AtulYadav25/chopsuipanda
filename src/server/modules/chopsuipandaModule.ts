@@ -28,6 +28,12 @@ export default new Module('chopsuiPanda', {
 
     channels: [notificationServerChannel, gameServerChannel],
 
+    queries: {
+        async checkPingPong() {
+            return successResponse({}, 'Pong!')
+        }
+    },
+
     mutations: {
         // Session lifecycle (replaces "register" socket event; see
         // sessionLifecycle.ts for the disconnect-hook limitation)

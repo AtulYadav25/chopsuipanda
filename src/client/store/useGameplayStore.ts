@@ -9,7 +9,7 @@ import { GAME_TYPES, GameType } from '@/shared/constants/GameTypes';
 import { BattleMatch } from '@/shared/schemas/battleMatch.schema';
 import { create } from 'zustand';
 
-export const PAGES = ['home', 'shop', 'frens', 'earn', 'challengeFren', 'leaderboard', 'tutorial', 'game', 'chestOpen'] as const;
+export const PAGES = ['home', 'shop', 'frens', 'earn', 'battleFren', 'leaderboard', 'tutorial', 'game', 'chestOpen'] as const;
 export type Page = (typeof PAGES)[number];
 
 interface GameplayState {

@@ -99,3 +99,15 @@ export const leaderboardAssets = {
     silverTrophy: () => import('./MenuPage/secondplace.webp'),
     bronzeTrophy: () => import('./MenuPage/thirdplace.webp'),
 };
+
+// Game Assets
+export const treeChopGameAssets = {
+    treeImage: () => import('./timber/tree.png'),
+    branchImage: () => import('./timber/branch.png'),
+    characterImage: () => import('./timber/character.png'),
+    backgroundImage: () => import('./timber/back4.webp'),
+    chiBonus: () => import('./chi.webp'),
+    timeBonus: () => import('./timeBonus.png'),
+    dustSpriteAnimation: () => import('./timber/characterDustSprite.png'),
+    floorImage: () => import('./timber/floor.webp'),
+}

@@ -11,10 +11,11 @@ import { z } from 'zod';
 import gameSessionStore from '../../stores/gameSessionStore';
 import { getSession, setSession } from '../../stores/liveGameCache';
 import { generateInitialBranches, generateBranchRefill } from '../../utils/treeBranchGenerator';
-import type { GameSession, TreeBranch } from '../../stores/types';
+import { TREE_CHOP_BRANCH_POSITION, TREE_CHOP_BRANCH_TYPE, type GameSession, type TreeBranch } from '../../stores/types';
 import type { HttpContext } from 'modelence/types';
 import { requirePlayer } from '@/server/utils/authPlayer';
 import { GAME_TYPES } from '@/shared/constants/GameTypes';
+import { successResponse, throwError } from '@/server/utils/responsHandler';
 
 async function persistSession(userId: string, session: GameSession): Promise<void> {
     setSession(userId, session);
@@ -37,32 +38,44 @@ async function loadSession(userId: string): Promise<GameSession | null> {
  */
 export async function treeChopSessionStart(_: unknown, { req }: HttpContext) {
 
-    const { userId } = requirePlayer(req);
+    try {
 
-    if (!userId) {
-        throw new Error('Invalid Access');
+
+
+        const { userId } = requirePlayer(req);
+
+        if (!userId) {
+            throw new Error('Invalid Access');
+        }
+
+        const existingSession = await gameSessionStore.findOne({ userId });
+        if (!existingSession) {
+            throw new Error('User not found');
+        }
+
+        const { branches, newBranchesForClient } = generateInitialBranches();
+
+        const sessionData: GameSession = {
+            ...existingSession,
+            userId,
+            isGamePaused: false,
+            treeChopScore: 0,
+            treeChopBranches: [...branches, ...newBranchesForClient],
+            treeChopLastTimeBonusSentAt: Date.now(),
+            gameType: GAME_TYPES.TREE_CHOP
+        };
+
+        await persistSession(userId, sessionData);
+
+        return successResponse<{
+            branches: TreeBranch[],
+            score: number,
+            newBranchesForClient: TreeBranch[]
+        }>({ branches, score: 0, newBranchesForClient }, "Branches Fetched Successfully");
+
+    } catch (error) {
+        return throwError((error as Error).message);
     }
-
-    const existingSession = await gameSessionStore.findOne({ userId });
-    if (!existingSession) {
-        throw new Error('User not found');
-    }
-
-    const { branches, newBranchesForClient } = generateInitialBranches();
-
-    const sessionData: GameSession = {
-        ...existingSession,
-        userId,
-        isGamePaused: false,
-        treeChopScore: 0,
-        treeChopBranches: [...branches, ...newBranchesForClient],
-        treeChopLastTimeBonusSentAt: Date.now(),
-        gameType: GAME_TYPES.TREE_CHOP
-    };
-
-    await persistSession(userId, sessionData);
-
-    return { score: 0, branches, newBranchesForClient };
 }
 
 /**
@@ -70,87 +83,86 @@ export async function treeChopSessionStart(_: unknown, { req }: HttpContext) {
  * generates and returns a fresh batch of branches.
  * Replaces socket event "chopTree".
  */
-export async function chopTree(args: unknown, { req }: HttpContext) {
+export async function chopTree(args: { side: TreeBranch['position'], clientBranchId: TreeBranch['id'] }, { req }: HttpContext) {
 
-    const { userId } = requirePlayer(req);
+    try {
+        const { userId } = requirePlayer(req);
 
-    const { side, clientBranchId } = z
-        .object({
-            side: z.enum(['left', 'right', 'nothing']),
-            clientBranchId: z.number(),
-        })
-        .parse(args);
+        const { side, clientBranchId } = args;
 
-    if (!userId) {
-        throw new Error('Not authenticated');
-    }
+        if (!userId) {
+            throw new Error('Not authenticated');
+        }
 
-    const session = await loadSession(userId);
-    if (!session) {
-        throw new Error('You Lost Connection!');
-    }
-    if (session.isGamePaused) {
-        throw new Error('Game Over');
-    }
-    if (!session.treeChopBranches) {
-        throw new Error('No active branches');
-    }
+        const session = await loadSession(userId);
+        if (!session) {
+            throw new Error('You Lost Connection!');
+        }
+        if (session.isGamePaused) {
+            throw new Error('Game Over');
+        }
+        if (!session.treeChopBranches) {
+            throw new Error('No active branches');
+        }
 
-    const currentBranches = [...session.treeChopBranches];
-    const targetBranch = currentBranches.find((branch) => branch.id === clientBranchId);
-    const position = targetBranch?.position ?? null;
-    const type = targetBranch?.type ?? null;
-    const currentScore = session.treeChopScore ?? 0;
+        const currentBranches = [...session.treeChopBranches];
+        const targetBranch = currentBranches.find((branch) => branch.id === clientBranchId);
+        const position = targetBranch?.position ?? null;
+        const type = targetBranch?.type ?? null;
+        const currentScore = session.treeChopScore ?? 0;
 
-    const isGameEndingChop = ((position === side && type !== 'scoreBonus') || side === 'nothing') && type !== 'timeBonus';
+        const isGameEndingChop = ((position === side && type !== TREE_CHOP_BRANCH_TYPE.SCORE_BONUS) || side === TREE_CHOP_BRANCH_POSITION.NONE) && type !== TREE_CHOP_BRANCH_TYPE.TIME_BONUS;
 
-    if (isGameEndingChop) {
-        const divideIndex = currentBranches.findIndex((branch) => branch.id === clientBranchId);
+        if (isGameEndingChop) {
+            const divideIndex = currentBranches.findIndex((branch) => branch.id === clientBranchId);
 
-        const slicedBranches = divideIndex !== -1 ? currentBranches.slice(divideIndex + 1) : [...currentBranches];
-        const scoringArray = divideIndex !== -1 ? currentBranches.slice(0, divideIndex) : [];
+            const slicedBranches = divideIndex !== -1 ? currentBranches.slice(divideIndex + 1) : [...currentBranches];
+            const scoringArray = divideIndex !== -1 ? currentBranches.slice(0, divideIndex) : [];
+
+            const updatedSession: GameSession = {
+                ...session,
+                isGamePaused: true,
+                treeChopScore: currentScore + (scoringArray.length - 1),
+                treeChopBranches: slicedBranches,
+            };
+
+            persistSession(userId, updatedSession);
+            return successResponse({}, 'Game Over');
+        }
+
+        if (targetBranch?.type === TREE_CHOP_BRANCH_TYPE.SCORE_BONUS) {
+            const updatedSession: GameSession = {
+                ...session,
+                treeChopScore: currentScore + 20,
+            };
+            persistSession(userId, updatedSession);
+            return successResponse({}, 'Score Added');
+        }
+
+        // Buffer running low — generate a fresh batch of branches.
+        const lastBranch = session.treeChopBranches[session.treeChopBranches.length - 1];
+        const { newBranches, timeBonusSentAt } = generateBranchRefill(
+            lastBranch.id,
+            session.treeChopLastTimeBonusSentAt ?? Date.now()
+        );
+
+        const fullBranchList: TreeBranch[] = [...session.treeChopBranches, ...newBranches];
+
+        const divideIndex = fullBranchList.findIndex((branch) => branch.id === clientBranchId);
+        const slicedBranches = divideIndex !== -1 ? fullBranchList.slice(divideIndex) : [...fullBranchList];
+        const scoringArray = divideIndex !== -1 ? fullBranchList.slice(0, divideIndex) : [];
 
         const updatedSession: GameSession = {
             ...session,
-            isGamePaused: true,
-            treeChopScore: currentScore + (scoringArray.length - 1),
+            treeChopScore: currentScore + scoringArray.length,
             treeChopBranches: slicedBranches,
+            treeChopLastTimeBonusSentAt: timeBonusSentAt,
         };
 
         persistSession(userId, updatedSession);
-        return { success: true, message: 'Game Over' };
+
+        return successResponse<{ branches: TreeBranch[], score: number }>({ branches: newBranches, score: updatedSession.treeChopScore }, "Branches Fetched Successfully");
+    } catch (error) {
+        return throwError((error as Error).message);
     }
-
-    if (targetBranch?.type === 'scoreBonus') {
-        const updatedSession: GameSession = {
-            ...session,
-            treeChopScore: currentScore + 20,
-        };
-        persistSession(userId, updatedSession);
-        return { success: true, message: 'Score Added' };
-    }
-
-    // Buffer running low — generate a fresh batch of branches.
-    const lastBranch = session.treeChopBranches[session.treeChopBranches.length - 1];
-    const { newBranches, timeBonusSentAt } = generateBranchRefill(
-        lastBranch.id,
-        session.treeChopLastTimeBonusSentAt ?? Date.now()
-    );
-
-    const fullBranchList: TreeBranch[] = [...session.treeChopBranches, ...newBranches];
-
-    const divideIndex = fullBranchList.findIndex((branch) => branch.id === clientBranchId);
-    const slicedBranches = divideIndex !== -1 ? fullBranchList.slice(divideIndex) : [...fullBranchList];
-    const scoringArray = divideIndex !== -1 ? fullBranchList.slice(0, divideIndex) : [];
-
-    const updatedSession: GameSession = {
-        ...session,
-        treeChopScore: currentScore + scoringArray.length,
-        treeChopBranches: slicedBranches,
-        treeChopLastTimeBonusSentAt: timeBonusSentAt,
-    };
-
-    persistSession(userId, updatedSession);
-
-    return { branches: newBranches, score: updatedSession.treeChopScore };
 }
