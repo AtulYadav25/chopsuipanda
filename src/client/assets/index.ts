@@ -111,3 +111,10 @@ export const treeChopGameAssets = {
     dustSpriteAnimation: () => import('./timber/characterDustSprite.png'),
     floorImage: () => import('./timber/floor.webp'),
 }
+
+
+//Battle Assets
+export const battleAssets = {
+    battleBackground: () => import('./GameBackgroundMob/challengeBackground.webp'),
+    battlePanda: () => import('./GameBackgroundMob/challengepanda.webp')
+}

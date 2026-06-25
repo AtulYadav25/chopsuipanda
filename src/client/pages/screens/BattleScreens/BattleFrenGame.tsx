@@ -1,21 +1,20 @@
 import { useState, useRef, Suspense, lazy } from "react";
-
-// import ChallengeScreen from './ChallengeGames/ChallengeScreen.jsx'
-// import ChallengeEndScreen from './ChallengeGames/ChallengeEndScreen.jsx'
-
-const TreeChopGameBattle = lazy(() => import('./TreeChopGameBattle.jsx'));
-// const KnifeNewGameChallenge = lazy(() => import('./ChallengeGames/KnifeNewGameChallenge.jsx'));
 import SimpleLoadingScreen from "../childScreens/SimpleLoadingScreen.js";
 import { useGameplayStore } from "@/client/store/useGameplayStore.js";
 import { useSubmitBattleScore } from "@/client/hooks/battleMatch.js";
 import { useToast } from "@/client/context/ToastContext.js";
+import BattleStartScreen from "./BattleStartScreen.js";
+import BattleEndScreen from "./BattleEndScreen.js";
+//Lazy Imports
+// const KnifeNewGameChallenge = lazy(() => import('./ChallengeGames/KnifeNewGameChallenge.jsx'));
+const TreeChopGameBattle = lazy(() => import('./TreeChopGameBattle.jsx'));
 
 
 const BattleFrenGame = ({ handleEndGame }: {
     handleEndGame: () => void;
 }) => {
 
-    const [showChallengeScreen, setShowChallengeScreen] = useState(true);
+    const [showBattleScreen, setShowBattleScreen] = useState(true);
     const [showGameOver, setShowGameOver] = useState(false);
 
 
@@ -29,10 +28,10 @@ const BattleFrenGame = ({ handleEndGame }: {
     //Toast Context
     const { showToast } = useToast();
 
-    const challengeDetailsRef = useRef(battleDetails);
+    const battleDetailsRef = useRef(battleDetails);
 
     const [loading, setLoading] = useState(true);
-    const [won, setWon] = useState<{
+    const [winner, setWinner] = useState<{
         username: string
     }>({ username: 'Panda' });
 
@@ -53,8 +52,8 @@ const BattleFrenGame = ({ handleEndGame }: {
                     const { data } = dataFromServer;
                     if (!data.battle || !data.winner) return;
                     setBattleDetails(data.battle)
-                    challengeDetailsRef.current = data.battle;
-                    setWon({ username: data.winner });
+                    battleDetailsRef.current = data.battle;
+                    setWinner({ username: data.winner });
 
                     setLoading(false)
                     setShowGameOver(true);
@@ -71,22 +70,22 @@ const BattleFrenGame = ({ handleEndGame }: {
     }
 
     const handleStartGame = () => {
-        setShowChallengeScreen(false);
+        setShowBattleScreen(false);
     };
 
+    if (!battleDetails) return <SimpleLoadingScreen loading={true} noAnimation={true} />;
 
     return (
         <>
-            {/* {showChallengeScreen && <BattleStartScreen battle={battleDetails} handleStartGame={handleStartGame} />}
+            {showBattleScreen && <BattleStartScreen battle={battleDetails} handleStartGame={handleStartGame} />}
             {showGameOver && <BattleEndScreen
-                battle={battleDetails}
-                won={won}
+                winner={winner}
                 loading={loading}
                 onReturnHome={handleEndGame}
-            />} */}
+            />}
             <Suspense fallback={<SimpleLoadingScreen loading={true} noAnimation={true} />}>
-                {(battleDetails?.gameMode === 'TREE_CHOP' && !showChallengeScreen) && <TreeChopGameBattle submitBattleScore={submitBattleScore} />}
-                {/* {(battleDetails?.gameMode === 'BAMBOO_SHOOT' && !showChallengeScreen) && <BambooShootGameBattle submitBattleScore={submitBattleScore} />} */}
+                {(battleDetails?.gameMode === 'TREE_CHOP' && !showBattleScreen) && <TreeChopGameBattle submitBattleScore={submitBattleScore} />}
+                {/* {(battleDetails?.gameMode === 'BAMBOO_SHOOT' && !showBattleScreen) && <BambooShootGameBattle submitBattleScore={submitBattleScore} />} */}
             </Suspense>
         </>
     );
