@@ -1,32 +1,52 @@
+import { useEffect } from "react";
+import { coreAssets, homeAssets, introAssets, menuIconAssets } from "../assets";
+import { useAssetLoader } from "../assets/useAssetLoader";
+import BottomNavBar from "../components/BottomNavbar";
 import MobileGameContainer from "../components/MobileGameContainer";
 import { ToastProvider, useToast } from "../context/ToastContext";
 import { useRefreshPlayerProfile } from "../hooks/player";
 import { Page, useGameplayStore } from "../store/useGameplayStore";
 import SoundManager from "../utils/SoundManager";
 import BattleFrenGame from "./screens/BattleScreens/BattleFrenGame";
+import PandaLoadingScreen from "./screens/childScreens/PandaLoadingScreen";
 import EarnScreen from "./screens/EarnScreen";
 import FrensScreen from "./screens/FrensScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LeaderBoardScreen from "./screens/LeaderboardScreen";
 import ShopScreen from "./screens/ShopScreen";
+import PlayGameWrapper from "./screens/PlayGameWrapper";
 
 function RootPage() {
 
     const page = useGameplayStore((s) => s.page);
     const setPage = useGameplayStore((s) => s.setPage);
 
+
+    //Asset loader
+    const { assets, ready, progress } = useAssetLoader({ ...homeAssets, ...menuIconAssets, ...coreAssets, ...introAssets })
+
     // Use Toast Context
     const { showToast } = useToast();
 
+    useEffect(() => {
+        SoundManager.loadGroup('Global')
+
+        return () => {
+            SoundManager.unloadGroup('Global')
+        }
+    }, [])
+
+    //Mutations & Queries
+    const { isLoading: isLoadingPlayerProfile, refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: true });
+
+
+
     // TODO : Add Loading Screen and make it wait untill everything is ready (assets, sounds, authenticated player)
 
-    const showConnectWallet = () => {
+    const showConnectWallet = (): void => {
         setPage('home');
         showToast({ type: 'info', message: 'Please Connect Wallet' })
     }
-
-    //Mutations & Queries
-    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: false });
 
     //Navbar Helpers
     const handleChangeMenuPage = (page: Page) => {
@@ -82,12 +102,15 @@ function RootPage() {
     return (
         <MobileGameContainer>
             <ToastProvider>
+                <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} progress={progress} />
                 {page === 'home' && <HomeScreen />}
                 {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}
                 {page === 'frens' && <FrensScreen changePage={handleChangeMenuPage} />}
                 {page === 'shop' && <ShopScreen showConnectWallet={showConnectWallet} />}
                 {page === 'leaderboard' && <LeaderBoardScreen />}
                 {page === 'battleFren' && <BattleFrenGame handleEndGame={handleEndGame} />}
+                {page === 'game' && <PlayGameWrapper handleEndGame={handleEndGame} />}
+                <BottomNavBar assets={assets} ready={ready} handleChangeMenuPage={handleChangeMenuPage} />
             </ToastProvider>
         </MobileGameContainer>
     );

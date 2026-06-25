@@ -1,21 +1,19 @@
-import React from "react";
-import { useGameplayStore } from "../store/useGameplayStore";
-import { useAssetLoader } from "../assets/useAssetLoader";
-import { homeAssets } from "../assets";
+import { Page, useGameplayStore } from "../store/useGameplayStore";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 
 
-const hiddenOnPages = ['game', 'chestOpen']
+const hiddenOnPages = ['game', 'chestOpen', 'battleFren', 'tutorial']
 
-const BottomNavBar = () => {
+const BottomNavBar = ({ assets, ready, handleChangeMenuPage }: {
+    assets: any;
+    ready: boolean;
+    handleChangeMenuPage: (page: Page) => void;
+}) => {
     const page = useGameplayStore((s) => s.page);
-    const setPage = useGameplayStore((s) => s.setPage);
     const isPlaying = useGameplayStore((s) => s.isPlaying);
     const showConnectWallet = useGameplayStore((s) => s.showConnectWallet);
 
     const account = useCurrentAccount();
-
-    const { assets, ready } = useAssetLoader(homeAssets);
 
     if (isPlaying || hiddenOnPages.includes(page) || !ready) {
         return null;
@@ -32,7 +30,7 @@ const BottomNavBar = () => {
                 <div className="pointer-events-auto m-auto flex w-[95%] justify-between items-center h-full absolute inset-0 px-[3%] py-[2%]">
                     <img
                         id="menu-shop"
-                        onClick={() => setPage('shop')}
+                        onClick={() => handleChangeMenuPage('shop')}
                         src={assets.shop}
                         alt="Menu Item 1"
                         className="menu-item w-[18%] h-[80%] object-contain transition-all cursor-pointer transform"
@@ -45,7 +43,7 @@ const BottomNavBar = () => {
                                 showConnectWallet();
                                 return;
                             }
-                            setPage('frens');
+                            handleChangeMenuPage('frens');
                         }}
                         src={assets.frens}
                         alt="Menu Item 2"
@@ -54,7 +52,7 @@ const BottomNavBar = () => {
                     />
                     <img
                         id="menu-home"
-                        onClick={() => setPage('home')}
+                        onClick={() => handleChangeMenuPage('home')}
                         src={assets.play}
                         alt="Menu Item 3"
                         className="menu-item w-[18%] h-[80%] object-contain transition-all cursor-pointer transform"
@@ -62,7 +60,7 @@ const BottomNavBar = () => {
                     />
                     <img
                         id="menu-earn"
-                        onClick={() => setPage('earn')}
+                        onClick={() => handleChangeMenuPage('earn')}
                         src={assets.earn}
                         alt="Menu Item 4"
                         className="menu-item w-[19%] h-[80%] object-contain transition-all cursor-pointer transform"
@@ -70,7 +68,7 @@ const BottomNavBar = () => {
                     />
                     <img
                         id="menu-leaderboard"
-                        onClick={() => setPage('leaderboard')}
+                        onClick={() => handleChangeMenuPage('leaderboard')}
                         src={assets.leaderboard}
                         alt="Menu Item 5"
                         className="menu-item w-[23%] h-[80%] object-contain transition-all cursor-pointer transform"
