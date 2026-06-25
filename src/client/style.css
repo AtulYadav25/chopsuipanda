@@ -1,0 +1,345 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Jaro:opsz@6..72&family=Luckiest+Guy&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    cursor: crosshair;
+}
+
+.stroke-text {
+    -webkit-text-stroke: 0px #3ba6b4;
+    color: #73faf6;
+    font-weight: 400 !important;
+    letter-spacing: 2px;
+    text-shadow: 1px 4px 4px #084b53c5;
+    /* Shadow effect */
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+@font-face {
+    font-family: 'kungfu';
+    src: url('../assets/fonts/kungfumasterspaced.ttf');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'kungfuexpanded';
+    src: url('../assets/fonts/kungfumasterexpand.ttf');
+    font-weight: 400;
+}
+
+
+@font-face {
+    font-family: 'Game';
+    src: url('../assets/fonts/GameStation.ttf');
+    font-weight: 400;
+}
+
+
+.font-poppins {
+    font-family: 'Poppins';
+}
+
+canvas {
+    image-rendering: crisp-edges;
+}
+
+
+
+.font-kungfu {
+    font-family: 'kungfu';
+}
+
+.font-bangers {
+    font-family: "Bangers", serif;
+    font-weight: lighter;
+}
+
+.text-gradient {
+    background: linear-gradient(0deg, #000, #000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: black;
+    text-shadow: 0px 0px white,
+        0px 0px white,
+        3px 4px white,
+        4px 4px white,
+        0px 3px white, 7px 2px white, 8px 4px white, -1px 0px white;
+    letter-spacing: 9px !important;
+    font-family: 'kungfuexpanded' !important;
+}
+
+
+
+.animated-button {
+    background-size: 400% 100%;
+    animation: buttonAnimation 3s linear infinite;
+}
+
+@keyframes buttonAnimation {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+#canvas {
+    /* background-color: rgb(24, 28, 31); */
+    z-index: 1000000;
+
+}
+
+.startGame {
+    z-index: 1;
+    display: flex;
+    width: 100vw;
+    position: absolute;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    font-family: 'Poppins';
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: white;
+}
+
+
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+}
+
+.pandaCoin {
+    width: 180px;
+    height: 180px;
+}
+
+.gameBtn {
+    margin: 12px 0;
+    padding: 8px 16px;
+    color: white;
+    /* background-color: rgb(59, 137, 255); */
+    background-color: #007fe6;
+    outline: none;
+    text-transform: uppercase;
+    font-size: 22px;
+    font-family: 'Poppins';
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    transition: .2s;
+}
+
+.gameBtn:hover {
+    background-color: rgb(28, 119, 255);
+}
+
+.copyRight {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+
+.countDown {
+    color: white;
+    font-family: 'Poppins';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    z-index: 13;
+}
+
+.countDown h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    padding: 10px 10px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    animation: animCount .4s linear ease-in;
+}
+
+@keyframes animCount {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(2.2);
+    }
+}
+
+#inGameContainer {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+    z-index: 10;
+    color: white;
+    font-family: 'Poppins';
+    box-sizing: border-box;
+    pointer-events: none;
+    padding: 10px 20px;
+}
+
+#inGameContainer .gameCountTime {
+    position: absolute;
+    top: 15px;
+    right: 0%;
+    font-size: 1.6rem;
+}
+
+.gameCountTime h1 {
+    width: 120px;
+}
+
+#strikeCountDiv {
+    position: absolute;
+    transition: .4s;
+    font-size: 1.4rem;
+    font-weight: bold;
+    font-family: 'chelsea-market';
+}
+
+#returnHome {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid white;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.serial {
+    flex: 0 0 30px;
+    text-align: center;
+}
+
+.name {
+    flex: 1;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.score {
+    flex: 0 0 50px;
+    text-align: center;
+}
+
+.avatar-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+    vertical-align: middle;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+
+.backgroundContainer {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.backgroundContainer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.backgroundContainer .backgroundHome {
+    z-index: 1;
+    filter: brightness(1);
+}
+
+
+.backgroundContainer .overlay {
+    z-index: 1000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.backgroundContainer .bamboo {
+    z-index: 3000;
+    position: absolute;
+    top: 0;
+    filter: brightness(1);
+    left: 0;
+}
+
+
+.suiCoin {
+    width: 125px;
+    height: 125px;
+    background: #2196F3;
+    border-radius: 50%;
+    border: 3px solid #1565c0;
+    box-sizing: border-box;
+    will-change: transform;
+    position: absolute;
+}
+
+
+.animate-Btn-pulse {
+    animation: Btn-pulse 2s infinite;
+}
+
+@keyframes Btn-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        color: #1e1e1e;
+    }
+
+    50% {
+        transform: scale(1.1);
+        color: #111;
+    }
+}
+
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}

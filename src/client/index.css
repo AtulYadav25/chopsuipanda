@@ -1,3 +1,165 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .game_btn {
+        @apply lg:text-lg px-8 text-sm cursor-pointer py-2 bg-custom-blue text-white rounded-lg w-full shadow-lg hover:bg-blue-500 relative overflow-hidden border-b-4 border-blue-500 hover:border-blue-600 font-Game;
+    }
+
+    .EarnBoxes {
+        @apply rounded-lg p-6 border-4 border-[#2a1503] overflow-hidden inset-0 bg-black/80 backdrop-blur;
+    }
+
+    .font-Game {
+        @apply drop-shadow-lg tracking-[0.08rem] font-light;
+
+    }
+
+    .font-Spenbeb {
+        @apply font-[100]
+    }
+
+    /* Top-down white shimmer */
+    .sui-animated-box .shine {
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0));
+    }
+
+    /* iOS-specific touch handling for modals */
+    .ios-touch-fix {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .user-select-none {
+        user-select: none;
+        -webkit-user-select: none;
+        /* For Safari */
+        -ms-user-select: none;
+        /* For old IE/Edge */
+    }
+
+
+    .ios-touch-fix * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .ios-touch-fix button {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .font-GameEffect {
+        @apply drop-shadow-lg tracking-[0.48rem] font-light;
+        text-shadow:
+            -2px -2px 0 #000,
+            -1px -1px 0 #000,
+            -2px 2px 0 #000,
+            0px 0px 0 #000,
+            1px 1px 0 #000,
+            0px -2px 0 #000,
+            2px -2px 0 #000,
+            0px -3px 0 #000,
+            3px -2px 0 #000,
+            2px 3px 0 #000,
+            3px 4px 0 #000,
+            4px 4px 0 #000;
+        font-family: 'Game'
+    }
+
+    .font-Darlond {
+        @apply drop-shadow-lg tracking-wide font-light;
+    }
+
+    .DarlondEffect {
+        text-shadow:
+            -2px -2px 0 #000,
+            -1px -1px 0 #000,
+            -2px 2px 0 #000,
+            0px 0px 0 #000,
+            1px 1px 0 #000,
+            0px -2px 0 #000
+    }
+}
+
+.glow-effect {
+    box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0.7), 0 0 30px 10px rgba(255, 165, 0, 0.5);
+    animation: glowing 1.5s infinite alternate;
+}
+
+@keyframes glowing {
+    from {
+        box-shadow: 0 0 10px 3px rgba(255, 255, 0, 0.5), 0 0 20px 7px rgba(255, 165, 0, 0.3);
+    }
+
+    to {
+        box-shadow: 0 0 20px 7px rgba(255, 255, 0, 0.9), 0 0 40px 15px rgba(255, 165, 0, 0.7);
+    }
+}
+
+.highlight-text {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    /* This clips the pseudo-element to the text boundaries */
+}
+
+
+.highlight-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: highlight-slide 2s infinite linear;
+    mix-blend-mode: overlay;
+    /* Better blend mode for text highlighting */
+    pointer-events: none;
+    /* Prevents interference with text selection */
+}
+
+@keyframes highlight-slide {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+/* Alternative approach using background-clip for even more precise text-only highlighting */
+.highlight-text-alt {
+    position: relative;
+    display: inline-block;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5), transparent);
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: highlight-slide-bg 2s infinite linear;
+}
+
+@keyframes highlight-slide-bg {
+    0% {
+        background-position: -100% 0;
+    }
+
+    100% {
+        background-position: 100% 0;
+    }
+}
