@@ -26,7 +26,7 @@ export function useChopTree() {
     return useMutation(chopsuipandaClientModule.mutation('chopTree'));
 }
 
-export function useContiueGame() {
+export function useContinueGame() {
     return useMutation(chopsuipandaClientModule.mutation('contiueGame'));
 }
 

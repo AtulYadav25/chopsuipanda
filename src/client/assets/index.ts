@@ -124,3 +124,10 @@ export const battleAssets = {
     battleBackground: () => import('./GameBackgroundMob/challengeBackground.webp'),
     battlePanda: () => import('./GameBackgroundMob/challengepanda.webp')
 }
+
+
+//Game Over
+export const gameOverAssets = {
+    gameOverBoard: () => import('./timber/gameOver.webp'),
+    scrollImage: () => import('./timber/scroll.webp'),
+}
