@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import gsap from 'gsap';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { gameOverAssets, introAssets } from '@/client/assets';
@@ -53,7 +53,16 @@ const GameOverScreen = ({
     apiLoading,
     numOfContinues,
 }: GameOverScreenProps) => {
-    const { assets } = useAssetLoader({ ...gameOverAssets, ...introAssets });
+
+    const allAssets = useMemo(
+        () => ({
+            ...gameOverAssets,
+            ...introAssets,
+        }),
+        []
+    );
+
+    const { assets } = useAssetLoader(allAssets);
 
     const gameOverRef = useRef<HTMLDivElement>(null);
     const scoreRef = useRef<HTMLDivElement>(null);
@@ -185,8 +194,8 @@ const GameOverScreen = ({
                                     disabled={apiLoading.loading || continueExpired}
                                     onClick={handleOnContinue}
                                     className={`w-full py-2 rounded-lg transition border-b-4 ${continueExpired
-                                            ? 'bg-gray-500 cursor-not-allowed border-gray-600'
-                                            : 'bg-green-500 hover:bg-green-600 border-green-700 hover:border-green-800'
+                                        ? 'bg-gray-500 cursor-not-allowed border-gray-600'
+                                        : 'bg-green-500 hover:bg-green-600 border-green-700 hover:border-green-800'
                                         }`}
                                 >
                                     {apiLoading.to === 'continue' ? (

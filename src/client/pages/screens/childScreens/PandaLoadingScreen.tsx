@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import suiBackground from '../assets/suiBackground.webp';
-import suiPandaLoading from '../assets/coinsmash.webp';
-import TempleBackground from '../assets/MenuPage/frensBackground.webp';
+import { useAssetLoader } from "@/client/assets/useAssetLoader";
+import { pandaLoadingAssets } from "@/client/assets";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,6 +24,10 @@ const WELCOME_MESSAGES = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const PandaLoadingScreen = ({ ready, progress }: PandaLoadingScreenProps) => {
+
+    //Assets
+    const { assets, ready: loadingAssetsReady } = useAssetLoader(pandaLoadingAssets);
+
     const [welcomeMessage, setWelcomeMessage] = useState<string>('');
     const [done, setDone] = useState<boolean>(false);
 
@@ -77,12 +80,12 @@ const PandaLoadingScreen = ({ ready, progress }: PandaLoadingScreenProps) => {
         <div
             ref={containerRef}
             className="fixed inset-0 z-[500] flex flex-col items-center justify-center bg-cover bg-center tracking-widest !font-Game"
-            style={{ backgroundImage: `url(${TempleBackground})` }}
+            style={{ backgroundImage: `url(${assets.TempleBackground})` }}
         >
             {/* Overlay image */}
             <img
                 ref={overlayRef}
-                src={suiBackground}
+                src={assets.suiBackground}
                 alt="Overlay"
                 className="absolute inset-0 w-full h-full object-contain top-0 pointer-events-none z-[10]"
             />
@@ -96,7 +99,7 @@ const PandaLoadingScreen = ({ ready, progress }: PandaLoadingScreenProps) => {
             {/* Character */}
             <img
                 ref={characterRef}
-                src={suiPandaLoading}
+                src={assets.suiPandaLoading}
                 alt="Character"
                 className="z-50 w-[80%] pointer-events-none"
             />

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import GameModeSelector from './childScreens/GameModeSelector';
 import { usePlayerStore } from '@/client/store/usePlayerStore';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
@@ -39,7 +39,14 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
     const challengeFrenAddress = useRef<string>('');
 
     // Asset loader
-    const { assets } = useAssetLoader({ ...introAssets, ...frensAssets });
+    const allAssets = useMemo(
+        () => ({
+            ...frensAssets,
+            ...introAssets,
+        }),
+        []
+    );
+    const { assets } = useAssetLoader(allAssets);
 
     // Hooks
     const account = useCurrentAccount();
@@ -108,7 +115,7 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
             {
                 onSuccess: (data) => {
                     setBattleDetails(data.data.battle);
-                    changePage('challengeFren');
+                    changePage('battleFren');
                 },
             }
         );

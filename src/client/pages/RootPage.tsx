@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { coreAssets, homeAssets, introAssets, menuIconAssets } from "../assets";
 import { useAssetLoader } from "../assets/useAssetLoader";
 import BottomNavBar from "../components/BottomNavbar";
 import MobileGameContainer from "../components/MobileGameContainer";
-import { ToastProvider, useToast } from "../context/ToastContext";
+import { useToast } from "../context/ToastContext";
 import { useRefreshPlayerProfile } from "../hooks/player";
 import { Page, useGameplayStore } from "../store/useGameplayStore";
 import SoundManager from "../utils/SoundManager";
@@ -15,31 +15,29 @@ import HomeScreen from "./screens/HomeScreen";
 import LeaderBoardScreen from "./screens/LeaderboardScreen";
 import ShopScreen from "./screens/ShopScreen";
 import PlayGameWrapper from "./screens/PlayGameWrapper";
+import gsap from "gsap";
 
 function RootPage() {
 
     const page = useGameplayStore((s) => s.page);
     const setPage = useGameplayStore((s) => s.setPage);
 
+    const allAssets = useMemo(
+        () => ({
+            ...homeAssets,
+            ...menuIconAssets,
+            ...coreAssets,
+            ...introAssets,
+        }),
+        []
+    );
 
-    //Asset loader
-    const { assets, ready, progress } = useAssetLoader({ ...homeAssets, ...menuIconAssets, ...coreAssets, ...introAssets })
-
+    const { assets, ready, progress } = useAssetLoader(allAssets);
     // Use Toast Context
     const { showToast } = useToast();
 
-    useEffect(() => {
-        SoundManager.loadGroup('Global')
-
-        return () => {
-            SoundManager.unloadGroup('Global')
-        }
-    }, [])
-
     //Mutations & Queries
     const { isLoading: isLoadingPlayerProfile, refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: true });
-
-
 
     // TODO : Add Loading Screen and make it wait untill everything is ready (assets, sounds, authenticated player)
 
@@ -93,6 +91,16 @@ function RootPage() {
         });
     };
 
+    useEffect(() => {
+        SoundManager.loadGroup('Global')
+        handleChangeMenuPage('home')
+
+        return () => {
+            SoundManager.unloadGroup('Global')
+        }
+    }, [])
+
+
     const handleEndGame = () => {
         setPage('home');
         refreshPlayerProfile();
@@ -101,17 +109,17 @@ function RootPage() {
 
     return (
         <MobileGameContainer>
-            <ToastProvider>
+            <>
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} progress={progress} />
-                {page === 'home' && <HomeScreen />}
-                {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}
+                {page === 'home' && <HomeScreen refreshPlayerProfile={refreshPlayerProfile} />}
+                {page === 'earn' && <EarnScreen refreshPlayerProfile={refreshPlayerProfile} showConnectWallet={showConnectWallet} />}
                 {page === 'frens' && <FrensScreen changePage={handleChangeMenuPage} />}
-                {page === 'shop' && <ShopScreen showConnectWallet={showConnectWallet} />}
+                {page === 'shop' && <ShopScreen refreshPlayerProfile={refreshPlayerProfile} showConnectWallet={showConnectWallet} />}
                 {page === 'leaderboard' && <LeaderBoardScreen />}
                 {page === 'battleFren' && <BattleFrenGame handleEndGame={handleEndGame} />}
                 {page === 'game' && <PlayGameWrapper handleEndGame={handleEndGame} />}
                 <BottomNavBar assets={assets} ready={ready} handleChangeMenuPage={handleChangeMenuPage} />
-            </ToastProvider>
+            </>
         </MobileGameContainer>
     );
 }

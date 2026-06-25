@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { coreAssets, menuIconAssets, notificationAssets } from '@/client/assets';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
@@ -15,6 +15,7 @@ import { disConnectMyWallet } from '@/client/dapp-kit';
 import SoundManager from '@/client/utils/SoundManager';
 import { useToast } from '@/client/context/ToastContext';
 import { usePlayerStore } from '@/client/store/usePlayerStore';
+import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,11 @@ function enterFullScreen(): void {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const HomeScreen = () => {
+const HomeScreen = ({ refreshPlayerProfile }: {
+    refreshPlayerProfile: (
+        options?: RefetchOptions
+    ) => Promise<QueryObserverResult<any>>;
+}) => {
     const textBox = useRef<HTMLDivElement>(null);
 
     const account = useCurrentAccount();
@@ -62,11 +67,15 @@ const HomeScreen = () => {
     const { showToast } = useToast();
 
     // Asset loader — merging all asset maps
-    const { assets } = useAssetLoader({
-        ...coreAssets,
-        ...menuIconAssets,
-        ...notificationAssets,
-    });
+    const allAssets = useMemo(
+        () => ({
+            ...coreAssets,
+            ...menuIconAssets,
+            ...notificationAssets,
+        }),
+        []
+    );
+    const { assets } = useAssetLoader(allAssets);
 
     // Mutations
     const { mutateAsync: disconnectWalletAndClearCookies } = useDisconnectWalletBackend();
@@ -129,7 +138,7 @@ const HomeScreen = () => {
                 )}
 
                 {/* Background */}
-                <div className="backgroundContainer h-[100vh] overflow-y-hidden">
+                <div className="backgroundContainer h-[100%] overflow-y-hidden">
                     <img
                         src={assets.mainBackground}
                         alt="Background"
@@ -160,7 +169,7 @@ const HomeScreen = () => {
                     {/* Panels */}
                     {showPanel === 'INBOX' && <InboxModal handlePanelClose={handlePanelClose} />}
                     {showPanel === 'BATTLE' && <BattleModal handlePanelClose={handlePanelClose} />}
-                    {showPanel === 'DAILY_STREAK' && <DailyStreakModal showPanel={showPanel} handlePanelClose={handlePanelClose} />}
+                    {showPanel === 'DAILY_STREAK' && <DailyStreakModal refreshPlayerProfile={refreshPlayerProfile} showPanel={showPanel} handlePanelClose={handlePanelClose} />}
                     {showPanel === 'FRENS' && <FrensModal handlePanelClose={handlePanelClose} />}
 
                     {/* Main content */}

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Page, useGameplayStore } from "../store/useGameplayStore";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 

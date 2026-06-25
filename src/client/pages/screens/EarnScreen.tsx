@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import gsap from 'gsap';
 import { FaEye } from "react-icons/fa";
 import { MdOutlineTimer } from "react-icons/md";
 import { useToast } from "@/client/context/ToastContext";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { usePlayerStore } from "@/client/store/usePlayerStore";
-import { useOpenChest, useRefreshPlayerProfile } from "@/client/hooks/player";
+import { useOpenChest } from "@/client/hooks/player";
 import { ChestReward, ChestType, ROYAL_CHEST_REWARDS, TREASURE_CHEST_REWARDS } from "@/shared/constants/ChestConfig";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { earnAssets, introAssets } from "@/client/assets";
 import ChestOpeningAnimation from './childScreens/ChestOpeningAnimationScreen';
+import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +19,9 @@ type CountAction = 'increment' | 'decrement';
 
 interface EarnScreenProps {
     showConnectWallet: () => void;
+    refreshPlayerProfile: (
+        options?: RefetchOptions
+    ) => Promise<QueryObserverResult<any>>;
 }
 
 interface RewardsGridProps {
@@ -28,7 +32,16 @@ interface RewardsGridProps {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const RewardsGrid = ({ rewards, onBack }: RewardsGridProps) => {
-    const { assets } = useAssetLoader({ ...introAssets, ...earnAssets });
+
+    const allAssets = useMemo(
+        () => ({
+            ...earnAssets,
+            ...introAssets,
+        }),
+        []
+    );
+
+    const { assets } = useAssetLoader(allAssets);
 
     return (
         <div className="EarnBoxes font-Game inset-0 bg-black/60 backdrop-blur">
@@ -72,7 +85,7 @@ const buttonClass =
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const EarnScreen = ({ showConnectWallet }: EarnScreenProps) => {
+const EarnScreen = ({ showConnectWallet, refreshPlayerProfile }: EarnScreenProps) => {
     const [activeTab, setActiveTab] = useState<TabType>('arena');
     const [treasureCount, setTreasureCount] = useState<number>(1);
     const [royalCount, setRoyalCount] = useState<number>(1);
@@ -87,7 +100,14 @@ const EarnScreen = ({ showConnectWallet }: EarnScreenProps) => {
     const royalChestRef = useRef<HTMLImageElement>(null);
 
     // Asset loader
-    const { assets } = useAssetLoader({ ...introAssets, ...earnAssets });
+    const allAssets = useMemo(
+        () => ({
+            ...earnAssets,
+            ...introAssets,
+        }),
+        []
+    );
+    const { assets } = useAssetLoader(allAssets);
 
     // Hooks
     const account = useCurrentAccount();
@@ -95,7 +115,6 @@ const EarnScreen = ({ showConnectWallet }: EarnScreenProps) => {
     const { showToast } = useToast();
 
     // Mutations & Queries
-    const { refetch: refetchPlayerProfile } = useRefreshPlayerProfile({ includeSocial: false });
     const { mutateAsync: openChest } = useOpenChest();
 
     // ─── Chest countdown + GSAP ───────────────────────────────────────────────
@@ -198,7 +217,7 @@ const EarnScreen = ({ showConnectWallet }: EarnScreenProps) => {
                 { chestDetails: { type: chestType, qty: count } },
                 {
                     onSuccess: (data) => {
-                        refetchPlayerProfile();
+                        refreshPlayerProfile();
                         setCurrentChestType(chestType);
                         setCurrentChestCount(count);
                         setSelectedRewards(data?.data ?? []);

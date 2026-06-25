@@ -8,12 +8,14 @@ import { ModelenceQueryClient } from '@modelence/react-query';
 import { router } from './router';
 // import favicon from './assets/favicon.svg';
 import './index.css';
+import './style.css'
 import LoadingSpinner from './components/LoadingSpinner';
 
 import { dAppKit } from './dapp-kit';
 import { DAppKitProvider } from '@mysten/dapp-kit-react';
 import notificationClientChannel from './channels/notificationClientChannel';
 import gameEventClientChannel from './channels/gameEventClientChannel';
+import { ToastProvider } from './context/ToastContext';
 
 const queryClient = new QueryClient();
 new ModelenceQueryClient().connect(queryClient);
@@ -28,7 +30,9 @@ renderApp({
     <Suspense fallback={<LoadingSpinner fullScreen />}>
       <QueryClientProvider client={queryClient}>
         <DAppKitProvider dAppKit={dAppKit}>
-          <RouterProvider router={router} />
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
         </DAppKitProvider>
       </QueryClientProvider>
     </Suspense>

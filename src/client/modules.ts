@@ -8,7 +8,7 @@ import chopsuipandaModule from '@/server/modules/chopsuipandaModule';
 import configModule from '@/server/modules/configModule';
 import weeklyRewardModule from '@/server/modules/weeklyRewardModule';
 
-export const playerClientModule = createClientModule<typeof playerModule>('players');
+export const playerClientModule = createClientModule<typeof playerModule>('player');
 
 export const friendshipClientModule = createClientModule<typeof friendshipModule>('friendship');
 

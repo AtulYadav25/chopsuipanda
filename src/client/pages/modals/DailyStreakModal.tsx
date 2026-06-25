@@ -6,9 +6,10 @@ import { Draggable } from "gsap/Draggable";
 import { getRewardsForClientUI, isStreakMissed } from "@/shared/constants/DailyLoginRewards";
 import { usePlayerStore } from "@/client/store/usePlayerStore";
 import { useToast } from "@/client/context/ToastContext";
-import { useContinueDailyStreak, useRefreshPlayerProfile } from "@/client/hooks/player";
+import { useContinueDailyStreak } from "@/client/hooks/player";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { introAssets } from "@/client/assets";
+import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
 
 // Register GSAP Draggable plugin
 gsap.registerPlugin(Draggable);
@@ -20,10 +21,12 @@ const formatReward = (value: number) => {
 
 const DailyStreakModal = ({
     showPanel,
-    handlePanelClose
+    handlePanelClose,
+    refreshPlayerProfile
 }: {
     showPanel: string
-    handlePanelClose: () => void
+    handlePanelClose: () => void;
+    refreshPlayerProfile: (options?: RefetchOptions) => Promise<QueryObserverResult<any>>
 }) => {
     const modalRef = useRef(null);
     const headerRef = useRef<HTMLDivElement>(null); // New ref for the draggable header
@@ -51,7 +54,6 @@ const DailyStreakModal = ({
 
     // Mutations & Queries
     const { mutateAsync: continueDailyStreak, isSuccess: continueStreakSuccess } = useContinueDailyStreak();
-    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: false });
 
     useEffect(() => {
         if (showPanel === "DAILY_STREAK" && modalRef.current && headerRef.current) {

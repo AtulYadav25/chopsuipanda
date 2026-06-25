@@ -1,19 +1,22 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Transaction } from '@mysten/sui/transactions';
 import SoundManager from '@/client/utils/SoundManager.js';
 import { useToast } from '@/client/context/ToastContext.js';
-import { useRefreshPlayerProfile } from '@/client/hooks/player.js';
 import { useCurrentAccount, useDAppKit } from '@mysten/dapp-kit-react';
 import { configClientModule } from '@/client/modules.js';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { introAssets, shopAssets } from '@/client/assets/index.js';
 import { CHI_SHOP_ITEMS, ChiShopItem } from '@/shared/constants/ChiShopConfig';
 import { usePurchaseChi, useVerifyDigest } from '@/client/hooks/sui';
+import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ShopScreenProps {
     showConnectWallet: () => void;
+    refreshPlayerProfile: (
+        options?: RefetchOptions
+    ) => Promise<QueryObserverResult<any>>;
 }
 
 interface ApiLoadingState {
@@ -61,8 +64,17 @@ const Spinner = () => (
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
-    const { assets } = useAssetLoader({ ...introAssets, ...shopAssets });
+const ShopScreen = ({ showConnectWallet, refreshPlayerProfile }: ShopScreenProps) => {
+
+    const allAssets = useMemo(
+        () => ({
+            ...shopAssets,
+            ...introAssets,
+        }),
+        []
+    );
+
+    const { assets } = useAssetLoader(allAssets);
 
     const [apiLoading, setApiLoading] = useState<ApiLoadingState>({
         loading: false,
@@ -72,8 +84,6 @@ const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
     // Toast
     const { showToast } = useToast();
 
-    // Queries
-    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: false });
 
     // Hooks
     const account = useCurrentAccount();

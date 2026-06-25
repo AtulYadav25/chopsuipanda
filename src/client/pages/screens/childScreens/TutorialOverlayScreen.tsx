@@ -25,7 +25,7 @@ const TUTORIAL_CONFIG: Partial<Record<GameType, TutorialConfig>> = {
     TREE_CHOP: {
         assets: {
             ...treeChopTutorialAssets,
-            bg: () => import("../assets/tutorial/TreeGame/treetutorBg.png"),
+            bg: () => import("../../../assets/tutorial/TreeGame/treetutorBg.png"),
         },
         backgroundKey: "bg",
         imageKeys: ["tut1", "tut2", "tut3"],
@@ -33,7 +33,7 @@ const TUTORIAL_CONFIG: Partial<Record<GameType, TutorialConfig>> = {
     BAMBOO_SHOOT: {
         assets: {
             ...bambooShootTutorialAssets,
-            bg: () => import("../assets/knife_boss/background.webp"),
+            bg: () => import("../../../assets/knife_boss/background.webp"),
         },
         backgroundKey: "bg",
         imageKeys: ["tut1", "tut2", "tut3"],

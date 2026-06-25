@@ -131,3 +131,10 @@ export const gameOverAssets = {
     gameOverBoard: () => import('./timber/gameOver.webp'),
     scrollImage: () => import('./timber/scroll.webp'),
 }
+
+//Panda Loading Assets
+export const pandaLoadingAssets = {
+    suiBackground: () => import('./suiBackground.webp'),
+    suiPandaLoading: () => import('./coinsmash.webp'),
+    TempleBackground: () => import('./MenuPage/frensBackground.webp'),
+}
