@@ -112,6 +112,12 @@ export const treeChopGameAssets = {
     floorImage: () => import('./timber/floor.webp'),
 }
 
+export const bambooShootGameAssets = {
+    target: () => import('./knife_boss/target.png'),
+    knife: () => import('./knife_boss/knife.png'),
+    apple: () => import('./knife_boss/apple.png'),
+    background: () => import('./knife_boss/background.webp'),
+}
 
 //Battle Assets
 export const battleAssets = {

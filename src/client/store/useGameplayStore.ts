@@ -5,6 +5,7 @@
 // shouldn't appear mid-game. Deliberately a boolean, not a page/screen enum
 // — see chat for why a screen string is more surface area than this needs.
 
+import { GameSession } from '@/server/modules/stores/types';
 import { GAME_TYPES, GameType } from '@/shared/constants/GameTypes';
 import { BattleMatch } from '@/shared/schemas/battleMatch.schema';
 import { create } from 'zustand';
@@ -18,12 +19,14 @@ interface GameplayState {
     gameMode: GameType;
     isGameSoundOn: boolean;
     battleDetails: BattleMatch | null;
+    lastGameEvent: { gameSession: GameSession | null, type: 'newLevel' | 'continueGame' | null };
     setIsPlaying: (isPlaying: boolean) => void;
     setPage: (page: Page) => void;
     showConnectWallet: () => void;
     setGameMode: (gameMode: GameType) => void;
     setIsGameSoundOn: (isGameSoundOn: boolean) => void;
     setBattleDetails: (battleDetails: BattleMatch) => void;
+    setLastGameEvent: (gameSession: GameSession | null, type: 'newLevel' | 'continueGame' | null) => void;
 }
 
 export const useGameplayStore = create<GameplayState>((set) => ({
@@ -32,6 +35,10 @@ export const useGameplayStore = create<GameplayState>((set) => ({
     gameMode: GAME_TYPES.IDLE,
     isGameSoundOn: false,
     battleDetails: null,
+    lastGameEvent: {
+        gameSession: null,
+        type: null,
+    },
     setIsPlaying: (isPlaying) => set({ isPlaying }),
     setPage: (page) => set({ page }),
     showConnectWallet: () => {
@@ -40,6 +47,7 @@ export const useGameplayStore = create<GameplayState>((set) => ({
     setGameMode: (gameMode: GameType) => set({ gameMode }),
     setIsGameSoundOn: (isGameSoundOn: boolean) => set({ isGameSoundOn }),
     setBattleDetails: (battleDetails: BattleMatch) => set({ battleDetails }),
+    setLastGameEvent: (gameSession: GameSession | null, type: 'newLevel' | 'continueGame' | null) => set({ lastGameEvent: { gameSession, type } }),
 }));
 
 

@@ -82,7 +82,7 @@ export async function bambooShootSessionStart(_: unknown, { req }: HttpContext) 
  */
 export async function throwBamboo(args: unknown, { req }: HttpContext) {
 
-    const { userId } = requirePlayer(req);
+    const { userId, walletAddress } = requirePlayer(req);
     if (!userId) {
         throw new Error('Not authenticated');
     }
@@ -195,7 +195,7 @@ export async function throwBamboo(args: unknown, { req }: HttpContext) {
 
     persistSession(userId, nextLevelSession);
 
-    gameServerChannel.broadcast(userId, {
+    gameServerChannel.broadcast(walletAddress, {
         type: 'newLevel',
         session: nextLevelSession,
     });

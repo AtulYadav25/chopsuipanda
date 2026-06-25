@@ -9,6 +9,13 @@ import treePowerUp from '../assets/audio/TreeChopGame/treePowerUp.mp3';
 import treeScoreAdded from '../assets/audio/TreeChopGame/treeScoreAdded.mp3';
 import pandaFall from '../assets/audio/TreeChopGame/pandaFall.mp3';
 
+// KnifeHit group
+import BambooShootBossEntry from '../assets/audio/KnifeHit/knifeBossEntry.mp3';
+import BambooShootBossDefeat from '../assets/audio/KnifeHit/knifeBossDefeat.mp3';
+import BambooShootHit from '../assets/audio/KnifeHit/knifeHit.mp3';
+import BambooShootHitOver from '../assets/audio/KnifeHit/knifeHitOver.mp3';
+import BambooShootHitSui from '../assets/audio/KnifeHit/knifeHitSui.wav';
+
 // Global group
 import bgm from '../assets/audio/bgm.mp3';
 import chestOpen from '../assets/audio/chestOpen.mp3';
@@ -17,7 +24,7 @@ import menuSwitch from '../assets/audio/menuSwitch.mp3';
 import notification from '../assets/audio/notification.wav';
 
 type SoundName = keyof typeof soundList;
-type GroupName = 'TreeChopGame' | 'Global';
+type GroupName = 'TreeChopGame' | 'BambooShoot' | 'Global';
 
 interface SoundConfig {
     src: string[];
@@ -35,6 +42,14 @@ const soundList: Record<string, SoundConfig> = {
     treePowerUp: { src: [treePowerUp], volume: 0.8, group: 'TreeChopGame' },
     treeScoreAdded: { src: [treeScoreAdded], volume: 0.7, group: 'TreeChopGame' },
     pandaFall: { src: [pandaFall], volume: 0.7, group: 'TreeChopGame' },
+
+    //BambooShootGame group
+    BambooShootBossEntry: { src: [BambooShootBossEntry], volume: 0.8, group: 'BambooShoot' },
+    BambooShootBossDefeat: { src: [BambooShootBossDefeat], volume: 0.8, group: 'BambooShoot' },
+    BambooShootHit: { src: [BambooShootHit], volume: 0.7, group: 'BambooShoot' },
+    BambooShootHitOver: { src: [BambooShootHitOver], volume: 0.9, group: 'BambooShoot' },
+    BambooShootHitSui: { src: [BambooShootHitSui], volume: 0.8, group: 'BambooShoot' },
+
 
     // Global group
     bgm: { src: [bgm], volume: 0.8, group: 'Global', loop: true },
