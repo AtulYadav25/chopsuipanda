@@ -7,6 +7,7 @@ import friendshipModule from './modules/friendshipModule';
 import chopsuipandaModule from './modules/chopsuipandaModule';
 import suiModule from './modules/suiModule';
 import chiTransactionModule from './modules/chiTransactionModule';
+import { seedInitialWeeklyReward } from './migrations/SeedInitialWeeklyReward';
 
 startApp({
     modules: [
@@ -18,5 +19,12 @@ startApp({
         chiTransactionModule,
         chopsuipandaModule,
         suiModule,
+    ],
+    migrations: [
+        {
+            version: 1,
+            description: 'Seed Initial WeeklyReward',
+            handler: seedInitialWeeklyReward,
+        },
     ]
 });

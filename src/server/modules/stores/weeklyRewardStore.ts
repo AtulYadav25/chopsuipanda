@@ -32,7 +32,7 @@ export const weeklyRewardSchema = {
     suiPayoutCron: schema.object({
         isRunning: schema.boolean(),
         lastRunAt: schema.date(),       // used to auto-reset if admin forgot to flip isRunning back
-    }),
+    }).optional(),
 
     createdAt: schema.date(),
     updatedAt: schema.date(),
