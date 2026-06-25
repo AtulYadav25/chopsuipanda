@@ -1,8 +1,6 @@
 import { Suspense, lazy } from "react";
 
-// import KnifeNewGame from "./KnifeGame/KnifeNewGame";
-// const KnifeNewGame = lazy(() => import('./KnifeGame/KnifeNewGame.jsx'));
-// import TreeGame from "./Games/TreeGame";
+const BambooShootGame = lazy(() => import('./GameScreens/BambooShootGame'));
 const TreeGame = lazy(() => import('./GameScreens/TreeChopGame'));
 
 import SimpleLoadingScreen from "./childScreens/SimpleLoadingScreen.js";
@@ -21,7 +19,7 @@ const PlayGameWrapper = ({ handleEndGame }: {
         <>
             <Suspense fallback={<SimpleLoadingScreen loading={true} noAnimation={true} />}>
                 {gameMode === GAME_TYPES.TREE_CHOP && <TreeGame handleEndGame={handleEndGame} />}
-                {/* {gameMode === GAME_TYPES.BAMBOO_SHOOT && <KnifeNewGame handleEndGame={handleEndGame} {...gameFunctions} />} */}
+                {gameMode === GAME_TYPES.BAMBOO_SHOOT && <BambooShootGame handleEndGame={handleEndGame} />}
             </Suspense>
         </>
     );

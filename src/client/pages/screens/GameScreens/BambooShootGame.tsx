@@ -6,10 +6,12 @@ import SoundManager from '@/client/utils/SoundManager';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { bambooShootGameAssets } from '@/client/assets';
-import { useBambooShootSessionStart, useCheckPingPong, useThrowBamboo } from '@/client/hooks/chopsuipanda';
+import { useBambooShootSessionStart, useCheckPingPong, useContinueGame, useEndGameSession, useThrowBamboo } from '@/client/hooks/chopsuipanda';
 import { GameSession } from '@/server/modules/stores/types';
 import gameEventClientChannel from '@/client/channels/gameEventClientChannel';
 import { useGameplayStore } from '@/client/store/useGameplayStore';
+import { useToast } from '@/client/context/ToastContext';
+import GameOverScreen from './GameOverScreen';
 
 // Game options
 const gameOptions = {
@@ -27,7 +29,7 @@ interface PlayGameInitData {
     levelRef: React.MutableRefObject<NonNullable<GameSession['bambooShootLevelData']>>;
     walletAddress: string;
     gameOverRef: any;
-    submitBattleScore: any;
+    handleEndGameSession: any;
     socket: any;
     playerScore: React.MutableRefObject<number>;
     throwBamboo: any;
@@ -97,7 +99,7 @@ class PlayGame extends Phaser.Scene {
         this.isTransitioning = false;
         this.BambooDisplaySizeWidth = 16;
         this.BambooDisplaySizeHeight = 110;
-        this.submitMiniGameChallenge = data.submitBattleScore;
+        this.submitMiniGameChallenge = data.handleEndGameSession;
         this.socket = data.socket;
         this.playerScore = data.playerScore;
         this.isEmitInProgress = false;
@@ -1064,19 +1066,36 @@ class PlayGame extends Phaser.Scene {
     }
 }
 
-const BambooShootGameBattle = ({ submitBattleScore }: {
-    submitBattleScore: () => void;
+const BambooShootGame = ({ handleEndGame }: {
+    handleEndGame: () => void;
 }) => {
 
     //Asset Loader
     const { assets, ready } = useAssetLoader(bambooShootGameAssets)
+
+    const [levelData, setLevelData] = useState<GameSession['bambooShootLevelData']>();
+    const [retryGame, setRetryGame] = useState(0);
+    const [showGameOver, setShowGameOver] = useState(false);
+    const [gameOverData, setGameOverData] = useState<{
+        score: number,
+        chi: number
+    }>({
+        score: 0,
+        chi: 0
+    });
+    const [apiLoading, setApiLoading] = useState({
+        loading: false,
+        to: ''
+    });
 
     const gameRef = useRef(null);
     const gameInstanceRef = useRef<Phaser.Game | null>(null);
     const BambooShootGroupRef = useRef(null);
     const playerScoreRef = useRef<number>(0);
     const [isGameInitialized, setIsGameInitialized] = useState(false);
-    const [levelData, setLevelData] = useState<GameSession['bambooShootLevelData']>();
+    const numOfContinues = useRef<number>(0);
+    const gameEndTimeStamp = useRef<number>(Date.now());
+
 
     //Hooks
     const account = useCurrentAccount();
@@ -1086,6 +1105,8 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
     const { mutateAsync: startBambooGameSession } = useBambooShootSessionStart();
     const { refetch: checkPingPong, isSuccess, isRefetching } = useCheckPingPong();
     const { mutateAsync: throwBamboo } = useThrowBamboo();
+    const { mutateAsync: handleEndGameSession } = useEndGameSession();
+    const { mutateAsync: continueGameSession } = useContinueGame();
 
     const gameOverRef = useRef(false);
 
@@ -1104,6 +1125,30 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
         }
     });
 
+    const gameOver = async () => {
+        if (gameOverRef.current === true) {
+            return
+        }
+
+        gameEndTimeStamp.current = Date.now();
+        await handleEndGameSession({}, {
+            onSuccess: (data) => {
+                setGameOverData({
+                    score: data.data.score,
+                    chi: data.data.chi
+                })
+                setShowGameOver(true);
+            }
+        });
+    }
+
+
+    //Toast Context
+    const { showToast } = useToast();
+
+    useEffect(() => {
+        gameOverRef.current = showGameOver;
+    }, [showGameOver])
 
 
     useEffect(() => {
@@ -1123,7 +1168,7 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
 
         const handleVisibilityChange = async () => {
             if ((document.hidden || document.visibilityState === "hidden") && !gameOverRef.current) {
-                await submitBattleScore();
+                await gameOver();
             }
         };
 
@@ -1132,7 +1177,7 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
                 return
             }
             // In some cases (especially on desktop), blur can indicate the user left the window
-            await submitBattleScore();
+            await gameOver();
 
         };
 
@@ -1210,7 +1255,7 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
             levelRef: levelRef,
             walletAddress: account?.address,
             gameOverRef: gameOverRef,
-            submitBattleScore,
+            handleEndGameSession,
             playerScore: playerScoreRef,
             throwBamboo,
             assets
@@ -1226,7 +1271,7 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
             game.destroy(true);
             window.removeEventListener('resize', handleResize);
         };
-    }, [isGameInitialized, ready]);
+    }, [isGameInitialized, ready, retryGame]);
 
     const [ping, setPing] = useState(0);
     const [showLowPingOverlay, setShowLowPingOverlay] = useState(false);
@@ -1255,6 +1300,72 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
         };
     }, []);
 
+    const handleRetryGame = async () => {
+        numOfContinues.current = 0;
+
+        try {
+
+            const loadLevelData = async () => {
+                await startBambooGameSession({}, {
+                    onSuccess: (data) => {
+                        levelRef.current = data.bambooShootLevelData;
+                        setLevelData(data.bambooShootLevelData);
+                        playerScoreRef.current = data.bambooShootScore || 0;
+                        setIsGameInitialized(true);
+                    }
+                });
+            }
+
+            loadLevelData();
+
+            setShowGameOver(false);
+            setRetryGame((prev) => prev + 1);
+        } catch (err) {
+            console.error("Emit failed:", err);
+            return; // stop here if socket fails
+        }
+
+    };
+
+
+    const handleContinueGameBtn = async () => {
+        let timeDiff = (Date.now() - gameEndTimeStamp.current) / 1000;
+        if (timeDiff > 30) {
+            showToast({ type: "info", message: "Time's up! You can try again. Give it your best!" });
+            return;
+        }
+
+        if (numOfContinues.current > 10) {
+            showToast({ type: "info", message: "You used your max chances, Try Again!" });
+            return;
+        }
+
+        setApiLoading({
+            loading: true,
+            to: 'continue'
+        });
+
+
+
+        try {
+            await continueGameSession({}, {
+                onSuccess: () => {
+                    setShowGameOver(false);
+                    numOfContinues.current += 1;
+                    setApiLoading({ loading: false, to: '' });
+                },
+                onError: (err) => {
+
+                    showToast({ type: "error", message: err.message });
+                    setApiLoading({ loading: false, to: '' });
+                }
+            });
+        } catch (e) {
+            setApiLoading({ loading: false, to: '' });
+        }
+    };
+
+
 
 
     return (
@@ -1270,6 +1381,18 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
                 }}>
                     Loading...
                 </div>
+            )}
+
+            {showGameOver && (
+                <GameOverScreen
+                    onContinue={handleContinueGameBtn}
+                    apiLoading={apiLoading}
+                    onExit={handleEndGame}
+                    onRetry={handleRetryGame}
+                    score={gameOverData?.score || 0}
+                    chi={gameOverData?.chi || 0}
+                    numOfContinues={numOfContinues.current}
+                />
             )}
 
             <div
@@ -1304,17 +1427,4 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
     );
 };
 
-export default BambooShootGameBattle;
-
-//Fix There is problem due to existing knives, the collision is not working, try to fix it
-//
-
-
-// How to fix collision detection for preAttached Knives and the new Knives
-// now I am detecting collision on depending on impactAngle of the knife
-// Understand the properties:
-// impactAngle: this is angle where a knife is hit the collision is detected
-// knife.angle: this is rotation angle of the knife. the knife.angle becomes 0 when it points to upwards and is on position down.Angle
-// SO now instead of using impact angle go with using knife.angle for collision detections
-
-// if any knife has angle 0 or  15 < angle < -15 then collision will be detected.
+export default BambooShootGame;
