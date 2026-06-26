@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { coreAssets, homeAssets, introAssets, menuIconAssets } from "../assets";
 import { useAssetLoader } from "../assets/useAssetLoader";
 import BottomNavBar from "../components/BottomNavbar";
@@ -16,11 +16,18 @@ import LeaderBoardScreen from "./screens/LeaderboardScreen";
 import ShopScreen from "./screens/ShopScreen";
 import PlayGameWrapper from "./screens/PlayGameWrapper";
 import gsap from "gsap";
+import ChiBalanceModal from "./modals/ChiBalanceModal";
+import { usePlayerStore } from "../store/usePlayerStore";
 
 function RootPage() {
 
     const page = useGameplayStore((s) => s.page);
     const setPage = useGameplayStore((s) => s.setPage);
+
+    const player = usePlayerStore((s) => s.player)
+
+    //UseStats
+    const [showChiBalance, setShowChiBalance] = useState<boolean>(true);
 
     const allAssets = useMemo(
         () => ({
@@ -106,9 +113,12 @@ function RootPage() {
         handleChangeMenuPage('home');
     }
 
+    const hiddenOnPages = ['game', 'chestOpen', 'battleFren', 'tutorial']
+
     return (
         <MobileGameContainer>
             <>
+                {showChiBalance && !hiddenOnPages.includes(page) && player && <ChiBalanceModal chiAmount={player?.chi} handleChangeMenuPage={handleChangeMenuPage} />}
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} />
                 {page === 'home' && <HomeScreen />}
                 {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}
