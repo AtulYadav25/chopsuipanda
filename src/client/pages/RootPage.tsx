@@ -32,7 +32,7 @@ function RootPage() {
         []
     );
 
-    const { assets, ready, progress } = useAssetLoader(allAssets);
+    const { assets, ready } = useAssetLoader(allAssets);
     // Use Toast Context
     const { showToast } = useToast();
 
@@ -110,7 +110,7 @@ function RootPage() {
     return (
         <MobileGameContainer>
             <>
-                <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} progress={progress} />
+                <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} />
                 {page === 'home' && <HomeScreen />}
                 {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}
                 {page === 'frens' && <FrensScreen changePage={handleChangeMenuPage} />}

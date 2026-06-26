@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { pandaLoadingAssets } from "@/client/assets";
+import { usePlayerAuth } from "@/client/context/PlayerAuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PandaLoadingScreenProps {
     ready: boolean;
-    progress: number; // 0–100, driven by useAssetLoader
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -21,15 +21,24 @@ const WELCOME_MESSAGES = [
     "Panda power is loading...",
 ];
 
+// Progress bar tuning
+const PRE_READY_CAP = 75;       // cap while waiting for `ready` (70-80% range)
+const PRE_READY_TICK_MS = 180;  // how often we bump progress before ready
+const POST_READY_TICK_MS = 60;  // faster ticks once ready, racing to 100%
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const PandaLoadingScreen = ({ ready, progress }: PandaLoadingScreenProps) => {
+const PandaLoadingScreen = ({ ready }: PandaLoadingScreenProps) => {
+
+    //Context
+    const { isAuthenticating } = usePlayerAuth();
 
     //Assets
-    const { assets, ready: loadingAssetsReady } = useAssetLoader(pandaLoadingAssets);
+    const { assets } = useAssetLoader(pandaLoadingAssets);
 
     const [welcomeMessage, setWelcomeMessage] = useState<string>('');
     const [done, setDone] = useState<boolean>(false);
+    const [progress, setProgress] = useState<number>(0);
 
     const overlayRef = useRef<HTMLImageElement>(null);
     const characterRef = useRef<HTMLImageElement>(null);
@@ -63,16 +72,38 @@ const PandaLoadingScreen = ({ ready, progress }: PandaLoadingScreenProps) => {
         };
     }, []);
 
+    // Fake progress engine:
+    // - Before `ready`: climbs toward PRE_READY_CAP (70-80%) and holds there.
+    // - Once `ready` is true: races the remainder up to 100%.
+    // - The bar hitting 100% is cosmetic only — actual hide/unmount is still
+    //   gated on `ready && !isAuthenticating` below, matching prior behavior.
+    useEffect(() => {
+        const target = ready ? 100 : PRE_READY_CAP;
+        const tickMs = ready ? POST_READY_TICK_MS : PRE_READY_TICK_MS;
+
+        const interval = setInterval(() => {
+            setProgress((prev) => {
+                if (prev >= target) return prev;
+                // ease-out: bigger steps far from target, smaller steps near it
+                const remaining = target - prev;
+                const step = Math.max(1, Math.round(remaining * 0.12));
+                return Math.min(target, prev + step);
+            });
+        }, tickMs);
+
+        return () => clearInterval(interval);
+    }, [ready]);
+
     // When everything is ready, fade out and unmount
     useEffect(() => {
-        if (!ready) return;
+        if (!ready || isAuthenticating) return;
 
         gsap.to(containerRef.current, {
             opacity: 0,
             duration: 1,
             onComplete: () => setDone(true),
         });
-    }, [ready]);
+    }, [ready, isAuthenticating]);
 
     if (done) return null;
 
@@ -112,7 +143,7 @@ const PandaLoadingScreen = ({ ready, progress }: PandaLoadingScreenProps) => {
                 <p className="text-blue-300 mt-2 text-lg">{welcomeMessage}</p>
             </div>
 
-            {/* Progress bar — driven directly by the `progress` prop */}
+            {/* Progress bar — driven by the fake progress engine above */}
             <div className="w-3/4 md:w-1/2 h-5 mt-5 bg-blue-300 rounded-full overflow-hidden z-[80] border border-black relative">
                 <div className="absolute bottom-0 left-0 w-full h-[3px] bg-blue-700 z-[90]" />
                 <div
