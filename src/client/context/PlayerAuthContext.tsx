@@ -16,6 +16,7 @@ import {
     useDisconnectWalletBackend,
     useRefreshPlayerProfile,
 } from "../hooks/player";
+import { useRegisterSession } from "../hooks/chopsuipanda";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
     const { mutateAsync: disconnectBackend } = useDisconnectWalletBackend();
     const { mutateAsync: authPlayer } = useAuthPlayer();
     const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile();
+    const { mutateAsync: registerSession } = useRegisterSession();
     const { refetch: checkAuth } = useCheckAuth();
 
     // ── Disconnect ─────────────────────────────────────────────────────────────
@@ -85,6 +87,7 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
                 // Cookie already valid — skip signing
                 setIsAuthenticated(true);
                 refreshPlayerProfile({ includeSocial: true });
+                await registerSession({});
                 return;
             }
 
@@ -122,9 +125,10 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
                     signature,
                 },
                 {
-                    onSuccess: () => {
+                    onSuccess: async () => {
                         setIsAuthenticated(true);
                         refreshPlayerProfile({ includeSocial: true });
+                        await registerSession({});
                     },
                     onError: async () => {
                         await handleDisconnectWallet();
