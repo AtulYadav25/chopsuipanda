@@ -23,7 +23,7 @@ import { getSession, setSession } from './stores/liveGameCache';
 import { GAME_TYPES } from '@/shared/constants/GameTypes';
 import { calculatePlayerScore } from '../utils/calculateScore';
 
-export default new Module('chopsuiPanda', {
+export default new Module('chopsuipanda', {
     stores: [gameSessionStore],
 
     channels: [notificationServerChannel, gameServerChannel],
@@ -156,10 +156,12 @@ export default new Module('chopsuiPanda', {
                 setSession(userId, { ...userData, isGamePaused: true });
 
                 await dbPlayers.updateOne({ walletAddress }, {
-                    chiEarned: calculatedchi + player.chiEarned,
-                    chi: player.chi + calculatedchi,
-                    continues: player.continues + 1,
-                    hasPendingContinue: true
+                    $set: {
+                        chiEarned: calculatedchi + player.chiEarned,
+                        chi: player.chi + calculatedchi,
+                        continues: player.continues + 1,
+                        hasPendingContinue: true
+                    }
                 })
 
 
