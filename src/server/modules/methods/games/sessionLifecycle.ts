@@ -77,6 +77,8 @@ export async function registerSession(ctx: HttpContext): Promise<void> {
     setSession(player._id.toString(), sessionData);
 }
 
+//TODO : When client disconnects, expire the session (From Client Side)
+
 /**
  * Best-effort cleanup, intended to be called explicitly (e.g. from a
  * "leaveGame" mutation fired on page unload, or a heartbeat sweep) since

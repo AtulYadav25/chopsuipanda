@@ -11,11 +11,11 @@ interface ApiLoadingState {
 }
 
 interface GameOverScreenProps {
-    score: number;
+    score: number | null;
     onContinue: () => void;
     onRetry: () => void;
     onExit: () => void;
-    chi: number;
+    chi: number | null;
     apiLoading: ApiLoadingState;
     numOfContinues: number;
 }
@@ -69,6 +69,7 @@ const GameOverScreen = ({
     const requestRef = useRef<number>(0);
     const startTimeRef = useRef<number | null>(null);
     const scoreTweenRef = useRef<gsap.core.Tween | null>(null);
+    const chiCoinRef = useRef<HTMLImageElement>(null);
 
     const [countdown, setCountdown] = useState<number>(30);
 
@@ -139,6 +140,32 @@ const GameOverScreen = ({
         };
     }, [score]);
 
+    useEffect(() => {
+        if (apiLoading.to === 'gameSessionEnd' && chiCoinRef.current) {
+            gsap.killTweensOf(chiCoinRef.current);
+            gsap.set(chiCoinRef.current, { scale: 0, opacity: 0, rotation: 0 });
+            gsap.to(chiCoinRef.current, {
+                scale: 1.2,
+                opacity: 1,
+                rotation: 360,
+                duration: 0.5,
+                ease: 'back.out(1.7)',
+                onComplete: () => {
+                    gsap.to(chiCoinRef.current, {
+                        scale: 1,
+                        rotation: 720,
+                        duration: 1.5,
+                        repeat: -1,
+                        ease: 'none',
+                    });
+                }
+            });
+        } else if (chiCoinRef.current) {
+            gsap.killTweensOf(chiCoinRef.current);
+            gsap.to(chiCoinRef.current, { scale: 0, opacity: 0, duration: 0.2 });
+        }
+    }, [apiLoading.to]);
+
     const handleOnContinue = () => {
         scoreTweenRef.current?.kill();
         scoreTweenRef.current = null;
@@ -163,51 +190,65 @@ const GameOverScreen = ({
                     <img src={assets.scrollImage} alt="Scroll" className="mx-auto w-full" />
 
                     <div className="scroll-content w-[90%] absolute inset-0 flex flex-col items-center justify-center m-auto p-6">
-                        <h2 className="text-3xl text-black mb-4">Your Score</h2>
-                        <div ref={scoreRef} className="text-white text-5xl mb-6">0</div>
 
-                        <div className="flex items-center justify-center mb-4">
-                            <img src={assets.chi} alt="CHI" className="w-10 mr-2" />
-                            <span className="text-blue-700 text-center text-lg">+{chi} CHI Earned</span>
-                        </div>
-
-                        <div className="flex flex-col gap-3 w-full text-white">
-                            <div className="flex gap-4">
-                                <button
-                                    disabled={apiLoading.loading}
-                                    onClick={onExit}
-                                    className="w-1/2 py-2 rounded-lg bg-green-500 border-b-4 border-green-700 hover:bg-green-600 hover:border-green-800 transition"
-                                >
-                                    Exit
-                                </button>
-                                <button
-                                    disabled={apiLoading.loading}
-                                    onClick={onRetry}
-                                    className="w-1/2 py-2 rounded-lg bg-green-500 border-b-4 border-green-700 hover:bg-green-600 hover:border-green-800 transition"
-                                >
-                                    Retry
-                                </button>
+                        {/* CHI coin loading overlay */}
+                        {apiLoading.to === 'gameSessionEnd' ? (
+                            <div className="absolute inset-0 flex items-center justify-center rounded z-10">
+                                <img
+                                    ref={chiCoinRef}
+                                    src={assets.chi}
+                                    alt="CHI"
+                                    className="w-20 h-20"
+                                />
                             </div>
+                        ) : (
+                            <>
+                                <h2 className="text-3xl text-black mb-4">Your Score</h2>
+                                <div ref={scoreRef} className="text-white text-5xl mb-6">0</div>
 
-                            {numOfContinues < 10 && (
-                                <button
-                                    disabled={apiLoading.loading || continueExpired}
-                                    onClick={handleOnContinue}
-                                    className={`w-full py-2 rounded-lg transition border-b-4 ${continueExpired
-                                        ? 'bg-gray-500 cursor-not-allowed border-gray-600'
-                                        : 'bg-green-500 hover:bg-green-600 border-green-700 hover:border-green-800'
-                                        }`}
-                                >
-                                    {apiLoading.to === 'continue' ? (
-                                        <Spinner />
-                                    ) : continueExpired ? (
-                                        'Time Expired'
-                                    ) : (
-                                        continueLabel
+                                <div className="flex items-center justify-center mb-4">
+                                    <img src={assets.chi} alt="CHI" className="w-10 mr-2" />
+                                    <span className="text-blue-700 text-center text-lg">+{chi} CHI Earned</span>
+                                </div>
+
+                                <div className="flex flex-col gap-3 w-full text-white">
+                                    <div className="flex gap-4">
+                                        <button
+                                            disabled={apiLoading.loading}
+                                            onClick={onExit}
+                                            className="w-1/2 py-2 rounded-lg bg-green-500 border-b-4 border-green-700 hover:bg-green-600 hover:border-green-800 transition"
+                                        >
+                                            Exit
+                                        </button>
+                                        <button
+                                            disabled={apiLoading.loading}
+                                            onClick={onRetry}
+                                            className="w-1/2 py-2 rounded-lg bg-green-500 border-b-4 border-green-700 hover:bg-green-600 hover:border-green-800 transition"
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+
+                                    {numOfContinues < 10 && (
+                                        <button
+                                            disabled={apiLoading.loading || continueExpired}
+                                            onClick={handleOnContinue}
+                                            className={`w-full py-2 rounded-lg transition border-b-4 ${continueExpired
+                                                ? 'bg-gray-500 cursor-not-allowed border-gray-600'
+                                                : 'bg-green-500 hover:bg-green-600 border-green-700 hover:border-green-800'
+                                                }`}
+                                        >
+                                            {apiLoading.to === 'continue' ? (
+                                                <Spinner />
+                                            ) : continueExpired ? (
+                                                'Time Expired'
+                                            ) : (
+                                                continueLabel
+                                            )}
+                                        </button>
                                     )}
-                                </button>
-                            )}
-                        </div>
+                                </div>
+                            </>)}
                     </div>
                 </div>
 

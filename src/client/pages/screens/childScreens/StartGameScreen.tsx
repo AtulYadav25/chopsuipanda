@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import GameModeSelector from "./GameModeSelector";
 import SoundManager from "@/client/utils/SoundManager";
@@ -37,8 +37,8 @@ const StartGameScreen = ({
     //Store Data
     const player = usePlayerStore((s) => s.player);
 
-
-    const handleClose = (e: React.MouseEvent<HTMLElement> | boolean, hasToStartGame?: boolean) => {
+    type ClosableEvent = React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>;
+    const handleClose = (e: ClosableEvent | boolean, hasToStartGame?: boolean) => {
         if (typeof e !== 'boolean') e.preventDefault();
         // Animation when component unmounts
         // if (showScreen !== "Home") {
@@ -50,15 +50,16 @@ const StartGameScreen = ({
             {
                 scale: 1.2, opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => {
                     onClose();
+                    console.log("Closing, ", hasToStartGame)
                     hasToStartGame && handleStartGame()
                 }
             }
         );
     };
 
-    const handleStartGameByClosingBox = async () => {
+    const handleStartGameByClosingBox = async (e: ClosableEvent) => {
         SoundManager.play('menuSwitch');
-        handleClose(true);
+        handleClose(e, true);
     }
 
     const itemRefs = useRef([]);
@@ -112,6 +113,7 @@ const StartGameScreen = ({
                                 className="w-full font-Game px-4 py-2 mb-3 text-white bg-blue-700 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none tracking-wider"
                                 placeholder="Enter your name"
                                 value={player?.username}
+                                onChange={() => { }}
                             />
 
 

@@ -25,11 +25,11 @@ const weeklyRewardModule = new Module('weeklyReward', {
 
     channels: [],
     cronJobs: {
-        // updateLeaderboardReward: {
-        //     description: "Updates the leaderboard reward snapshot every 4 hours",
-        //     interval: time.hours(4),
-        //     handler: startLeaderboardRewardUpdate,
-        // }, TODO: Uncomment this...
+        updateLeaderboardReward: {
+            description: "Updates the leaderboard reward snapshot every 4 hours",
+            interval: time.hours(1),
+            handler: startLeaderboardRewardUpdate,
+        }, //TODO: Uncomment this...
     }
 })
 

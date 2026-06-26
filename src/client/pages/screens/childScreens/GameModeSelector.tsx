@@ -76,6 +76,7 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
     const [loadingFor, setLoadingFor] = useState<LoadingState>({ visible: false, for: 0 });
     const [showTutorial, setShowTutorial] = useState<boolean>(false);
     const [selectedGameModeIndex, setSelectedGameModeIndex] = useState<number>(0);
+    const [isNextDisabled, setIsNextDisabled] = useState<boolean>(false);
 
     // Asset loader
     const { assets } = useAssetLoader(gameModeAssets);
@@ -149,6 +150,7 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
         setSelectedGameModeIndex(index);
         setGameMode(gameIndexToType[index]);
         SoundManager.play('menuSwitch');
+        setIsNextDisabled((player?.level ?? 0) < selectedGameModeIndex)
 
         itemRefs.current.forEach((ref, i) => {
             if (!ref) return;
@@ -160,7 +162,6 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
         });
     };
 
-    const isNextDisabled = (player?.level ?? 0) < selectedGameModeIndex;
     const isLoadingCurrent = loadingFor.visible && loadingFor.for === selectedGameModeIndex;
 
     return (
@@ -186,10 +187,12 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
                             <div
                                 key={i}
                                 ref={(el) => { itemRefs.current[i] = el; }}
-                                onClick={() => handleSelect(i)}
+                                onClick={() => {
+                                    handleSelect(i)
+                                }}
                                 className={`w-[85%] !min-h-[8%] border-1 relative border-b-4 border-t-4 border-gray-200 rounded-xl cursor-pointer transition-all duration-300 flex ${selectedGameModeIndex === i
-                                        ? "flex-col justify-center items-center"
-                                        : `flex-row justify-between items-center p-4 ${item.bg}`
+                                    ? "flex-col justify-center items-center"
+                                    : `flex-row justify-between items-center p-4 ${item.bg}`
                                     }`}
                                 style={{
                                     height: selectedGameModeIndex === i ? "100%" : "6%",

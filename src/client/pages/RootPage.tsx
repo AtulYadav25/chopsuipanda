@@ -26,8 +26,6 @@ function RootPage() {
 
     const player = usePlayerStore((s) => s.player)
 
-    //UseStats
-    const [showChiBalance, setShowChiBalance] = useState<boolean>(true);
 
     const allAssets = useMemo(
         () => ({
@@ -118,7 +116,7 @@ function RootPage() {
     return (
         <MobileGameContainer>
             <>
-                {showChiBalance && !hiddenOnPages.includes(page) && player && <ChiBalanceModal chiAmount={player?.chi} handleChangeMenuPage={handleChangeMenuPage} />}
+                {!hiddenOnPages.includes(page) && player && <ChiBalanceModal chiAmount={player?.chi} handleChangeMenuPage={handleChangeMenuPage} />}
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} />
                 {page === 'home' && <HomeScreen />}
                 {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}

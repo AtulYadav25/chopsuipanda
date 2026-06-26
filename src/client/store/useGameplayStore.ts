@@ -32,7 +32,7 @@ interface GameplayState {
 export const useGameplayStore = create<GameplayState>((set) => ({
     isPlaying: false,
     page: 'home',
-    gameMode: GAME_TYPES.IDLE,
+    gameMode: GAME_TYPES.TREE_CHOP,
     isGameSoundOn: false,
     battleDetails: null,
     lastGameEvent: {

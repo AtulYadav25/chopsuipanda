@@ -822,7 +822,7 @@ const TreeChopGameBattle = ({ submitBattleScore
 
             if ((timestamp - lastUpdateTimerRef.current) > 1000) {
 
-                if (gameOverRef.current || !isGameStarted.current) return;
+                if (gameOverRef.current || !isGameStarted.current) return; // TODO: Might note need this
 
                 if (countdownSecondsRef.current > 0) {
                     if (isGameStarted.current) {
@@ -871,6 +871,14 @@ const TreeChopGameBattle = ({ submitBattleScore
                 const responseBranches = data?.branches ?? [];
                 newBranches.current.push(...responseBranches);
                 fetchingMoreBranches.current = false;
+
+                // Clear stale GSAP animations for bonus branches scrolling off screen
+                Object.values(bonusBranchRefs.current).forEach(tween => {
+                    if (tween) {
+                        gsap.killTweensOf(tween);
+                    }
+                });
+                bonusBranchRefs.current = {};
             },
             onError: (err) => {
                 showToast({ type: 'error', message: err.message || 'Failed to fetch branches' });
@@ -1184,6 +1192,8 @@ const TreeChopGameBattle = ({ submitBattleScore
     };
 
 
+    const gameStartedFlight = useRef<boolean>(false);
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "ArrowLeft") chop(TREE_CHOP_BRANCH_POSITION.LEFT);
@@ -1203,6 +1213,10 @@ const TreeChopGameBattle = ({ submitBattleScore
 
         const startSession = async () => {
             try {
+
+
+                // if(gameStartedFlight.current) return; // TODO: What about this? Check if game works correct with this condtion
+                gameStartedFlight.current = true;
                 await startTreeChopSession({}, {
                     onSuccess: (data) => {
                         isGameStarted.current = true;
@@ -1267,7 +1281,7 @@ const TreeChopGameBattle = ({ submitBattleScore
     return (
         <>
             {/* Show asset-loading screen until useAssetLoader finishes */}
-            <SimpleLoadingScreen loading={!ready} noAnimation={true} />
+            {!ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
 
             <div className="relative w-full h-screen overflow-hidden bg-sky-500">
 

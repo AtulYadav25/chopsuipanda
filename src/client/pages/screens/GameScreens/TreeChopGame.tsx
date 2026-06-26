@@ -32,9 +32,9 @@ const TreeChopGame = ({ handleEndGame
         to: ''
     })
     const [showGameOver, setShowGameOver] = useState(false);
-    const [sessionEndData, setSessionEndData] = useState<{ score: number; chi: number }>({
-        score: 0,
-        chi: 0
+    const [sessionEndData, setSessionEndData] = useState<{ score: number | null; chi: number | null }>({
+        score: null,
+        chi: null
     });
 
     const sessionEndStamp = useRef<number>(0);
@@ -50,7 +50,7 @@ const TreeChopGame = ({ handleEndGame
     const { mutateAsync: startTreeChopSession } = useTreeChopSessionStart();
     const { mutateAsync: endGameSession } = useEndGameSession();
     const { mutate: chopTree } = useChopTree();
-    const { refetch: checkPingPong, isSuccess, isRefetching } = useCheckPingPong();
+    // const { refetch: checkPingPong, isSuccess, isRefetching } = useCheckPingPong();
     const { mutateAsync: continueTreeChopGame } = useContinueGame();
 
     // ── Typed mutation queue (replaces socket emit queue) ────────────────────
@@ -90,31 +90,31 @@ const TreeChopGame = ({ handleEndGame
     };
 
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (isRefetching) return;
-            const start = Date.now();
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         if (isRefetching) return;
+    //         const start = Date.now();
 
-            checkPingPong({});
+    //         checkPingPong({});
 
-            if (isSuccess) {
-                const latency = Date.now() - start;
-                setPing(latency);
+    //         if (isSuccess) {
+    //             const latency = Date.now() - start;
+    //             setPing(latency);
 
-                // Show overlay if latency is too high (adjust as needed)
-                if (latency > 600) {
-                    setShowLowPingOverlay(true);
-                    setTimeout(() => setShowLowPingOverlay(false), 1000)
-                }
-            }
-        }, 3000); // check ping every 3 seconds
+    //             // Show overlay if latency is too high (adjust as needed)
+    //             if (latency > 600) {
+    //                 setShowLowPingOverlay(true);
+    //                 setTimeout(() => setShowLowPingOverlay(false), 1000)
+    //             }
+    //         }
+    //     }, 3000); // check ping every 3 seconds
 
-        return () => {
-            clearInterval(interval);
-            mutationQueue.current = [];
-            isEmitting.current = false;
-        };
-    }, []);
+    //     return () => {
+    //         clearInterval(interval);
+    //         mutationQueue.current = [];
+    //         isEmitting.current = false;
+    //     };
+    // }, []);
 
     const handleContinueGame = async () => {
         let timeDiff = (Date.now() - sessionEndStamp.current) / 1000
@@ -135,10 +135,11 @@ const TreeChopGame = ({ handleEndGame
 
         try {
             await continueTreeChopGame({}, {
-                onSuccess: () => {
+                onSuccess: (data) => {
                     setShowGameOver(false);
                     timeBarProgress.current = 100;
                     numOfContinues.current += 1;
+                    // TODO On Continue get the branches from User (Because JS file does that similar)
                     updateCircleTimer(20);
                     playerSide.current = playerSide.current === 'left' ? 'right' : 'left';
                     isChopping.current = false;
@@ -181,6 +182,10 @@ const TreeChopGame = ({ handleEndGame
                         branches.current = data.data.branches;
                         newBranches.current = data.data.newBranchesForClient;
                         setGameState("started");
+                        setSessionEndData({
+                            score: null,
+                            chi: null
+                        });
                     },
                     onError: (err) => {
                         console.error("Session start failed:", err);
@@ -216,7 +221,6 @@ const TreeChopGame = ({ handleEndGame
                         score: data.data.score,
                         chi: data.data.chi
                     })
-                    setShowGameOver(true)
                 },
                 onError: () => {
                     showToast({ type: "error", message: "Failed to Continue" })
@@ -932,8 +936,6 @@ const TreeChopGame = ({ handleEndGame
 
             if ((timestamp - lastUpdateTimerRef.current) > 1000) {
 
-                if (gameOverRef.current || !isGameStarted.current) return;
-
                 if (countdownSecondsRef.current > 0) {
                     if (isGameStarted.current) {
                         countdownSecondsRef.current = countdownSecondsRef.current - 1;
@@ -981,6 +983,14 @@ const TreeChopGame = ({ handleEndGame
                 const responseBranches = data?.branches ?? [];
                 newBranches.current.push(...responseBranches);
                 fetchingMoreBranches.current = false;
+
+                // Clear stale GSAP animations for bonus branches scrolling off screen
+                Object.values(bonusBranchRefs.current).forEach(tween => {
+                    if (tween) {
+                        gsap.killTweensOf(tween);
+                    }
+                });
+                bonusBranchRefs.current = {};
             },
             onError: (err) => {
                 showToast({ type: 'error', message: err.message || 'Failed to fetch branches' });
@@ -1228,6 +1238,10 @@ const TreeChopGame = ({ handleEndGame
                     setTimeout(async () => {
                         // gameOverFunc("You Lose");
                         // gameOver();
+                        setApiLoading({
+                            loading: true,
+                            to: 'gameSessionEnd'
+                        })
                         handleEmitGameOverSocket()
                     }, 650);
                 }, 100);
@@ -1259,21 +1273,14 @@ const TreeChopGame = ({ handleEndGame
             return;
         }
 
+        setShowGameOver(true);
+
         const clientBranchId = branches.current[visibleParts - (visibleParts - 1)].id as number;
         const dataPacket: ChopTreeArgs = {
             side: TREE_CHOP_BRANCH_POSITION.NONE,
             clientBranchId
         };
 
-        // Optional delay logic
-        const maybeDelay = (): Promise<void> =>
-            new Promise<void>((resolve) => {
-                if (showCharacterAnimation.current || showDustAnimation.current) {
-                    setTimeout(resolve, 1200);
-                } else {
-                    resolve();
-                }
-            });
 
         const emitGameOver = () => {
             return new Promise<void>((resolve, reject) => {
@@ -1285,13 +1292,18 @@ const TreeChopGame = ({ handleEndGame
         };
 
         try {
-            await maybeDelay();          // Wait if animation is on
             await emitGameOver();        // Emit and wait for server response
             await gameOver();            // Then call game over logic
+            setApiLoading({
+                loading: false,
+                to: ''
+            })
         } catch (err) {
             console.error("Emit failed:", err);
         }
     };
+
+    const gameStartedFlight = useRef<boolean>(false);
 
 
     useEffect(() => {
@@ -1313,6 +1325,10 @@ const TreeChopGame = ({ handleEndGame
 
         const startSession = async () => {
             try {
+
+                // if(gameStartedFlight.current) return; // TODO: What about this? Check if game works correct with this condtion
+                gameStartedFlight.current = true;
+
                 await startTreeChopSession({}, {
                     onSuccess: (data) => {
                         isGameStarted.current = true;
@@ -1377,7 +1393,7 @@ const TreeChopGame = ({ handleEndGame
     return (
         <>
             {/* Show asset-loading screen until useAssetLoader finishes */}
-            <SimpleLoadingScreen loading={!ready} noAnimation={true} />
+            {!ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
 
             <div className="relative w-full h-screen overflow-hidden bg-sky-500">
 
@@ -1409,7 +1425,7 @@ const TreeChopGame = ({ handleEndGame
 
                 {/* Loading Game (Waiting for start game socket) Overlay */}
                 {gameState === 'starting' && (
-                    <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] inset-0 flex items-center justify-center bg-blue-500/60 z-40 w-18 h-18 rounded-full">
+                    <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] inset-0 flex items-center justify-center bg-blue-500/60 z-40 w-6 h-6 rounded-full">
                         <svg aria-hidden="true" role="status" className="inline w-4 h-4 text-white animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="#E5E7EB" />
                             <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentColor" />

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 
 const BambooShootGame = lazy(() => import('./GameScreens/BambooShootGame'));
 const TreeGame = lazy(() => import('./GameScreens/TreeChopGame'));
@@ -13,6 +13,8 @@ const PlayGameWrapper = ({ handleEndGame }: {
 
     //Store Data
     const gameMode = useGameplayStore((s) => s.gameMode)
+
+    useEffect(() => { console.log(gameMode) }, [gameMode])
 
 
     return (

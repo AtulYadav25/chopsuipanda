@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { coreAssets, introAssets, menuIconAssets, notificationAssets } from '@/client/assets';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
@@ -15,7 +15,6 @@ import { disConnectMyWallet } from '@/client/dapp-kit';
 import SoundManager from '@/client/utils/SoundManager';
 import { useToast } from '@/client/context/ToastContext';
 import { usePlayerStore } from '@/client/store/usePlayerStore';
-import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -76,7 +75,6 @@ const HomeScreen = () => {
 
     // Mutations
     const { mutateAsync: disconnectWalletAndClearCookies } = useDisconnectWalletBackend();
-    const { mutateAsync: authenticatePlayer } = useAuthPlayer();
 
     // Store
     const isGameSoundOn = useGameplayStore((s) => s.isGameSoundOn);
@@ -100,7 +98,7 @@ const HomeScreen = () => {
                 localStorage.setItem('player', player!.username)
 
                 if (isDeviceAMobile()) {
-                    enterFullScreen();
+                    // enterFullScreen();
                 }
                 setPage('game');
             },
