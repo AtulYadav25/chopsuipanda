@@ -8,15 +8,12 @@ import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { introAssets, shopAssets } from '@/client/assets/index.js';
 import { CHI_SHOP_ITEMS, ChiShopItem } from '@/shared/constants/ChiShopConfig';
 import { usePurchaseChi, useVerifyDigest } from '@/client/hooks/sui';
-import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
+import { useRefreshPlayerProfile } from '@/client/hooks/player';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ShopScreenProps {
     showConnectWallet: () => void;
-    refreshPlayerProfile: (
-        options?: RefetchOptions
-    ) => Promise<QueryObserverResult<any>>;
 }
 
 interface ApiLoadingState {
@@ -64,7 +61,7 @@ const Spinner = () => (
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const ShopScreen = ({ showConnectWallet, refreshPlayerProfile }: ShopScreenProps) => {
+const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
 
     const allAssets = useMemo(
         () => ({
@@ -92,6 +89,7 @@ const ShopScreen = ({ showConnectWallet, refreshPlayerProfile }: ShopScreenProps
     // Mutations
     const { mutateAsync: purchaseChi } = usePurchaseChi();
     const { mutateAsync: verifyDigest } = useVerifyDigest();
+    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile();
 
     // Config — const since these never change after init
     const PACKAGE_ID = configClientModule.getConfig('PACKAGE_ID');

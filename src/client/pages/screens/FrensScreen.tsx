@@ -52,7 +52,7 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
     const account = useCurrentAccount();
 
     // Mutations & Queries
-    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: true });
+    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile();
     const { mutateAsync: sendBattleChallenge } = useSendBattleChallenge();
     const { mutateAsync: sendFriendRequest } = useSendFriendRequest();
     const { mutateAsync: deleteFriend } = useDeleteFriend();
@@ -85,7 +85,7 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
                 onSuccess: async () => {
                     showToast({ type: 'success', message: 'Fren removed!' });
                     setShowUnfriendModal({ visible: false, friendUsername: '' });
-                    refreshPlayerProfile();
+                    refreshPlayerProfile({ includeSocial: true });
                 },
                 onError: () => showToast({ type: 'error', message: 'Failed to unfriend' }),
             }

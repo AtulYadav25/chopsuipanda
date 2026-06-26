@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { coreAssets, menuIconAssets, notificationAssets } from '@/client/assets';
+import { coreAssets, introAssets, menuIconAssets, notificationAssets } from '@/client/assets';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { useGameplayStore } from '@/client/store/useGameplayStore';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
@@ -10,7 +10,7 @@ import FrensModal from '../modals/FrensModal';
 import BattleModal from '../modals/BattleModal';
 import InboxModal from '../modals/InboxModal';
 import StartGameScreen from './childScreens/StartGameScreen';
-import { useDisconnectWalletBackend } from '@/client/hooks/player';
+import { useAuthPlayer, useDisconnectWalletBackend } from '@/client/hooks/player';
 import { disConnectMyWallet } from '@/client/dapp-kit';
 import SoundManager from '@/client/utils/SoundManager';
 import { useToast } from '@/client/context/ToastContext';
@@ -50,11 +50,7 @@ function enterFullScreen(): void {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const HomeScreen = ({ refreshPlayerProfile }: {
-    refreshPlayerProfile: (
-        options?: RefetchOptions
-    ) => Promise<QueryObserverResult<any>>;
-}) => {
+const HomeScreen = () => {
     const textBox = useRef<HTMLDivElement>(null);
 
     const account = useCurrentAccount();
@@ -71,6 +67,7 @@ const HomeScreen = ({ refreshPlayerProfile }: {
         () => ({
             ...coreAssets,
             ...menuIconAssets,
+            ...introAssets,
             ...notificationAssets,
         }),
         []
@@ -79,6 +76,7 @@ const HomeScreen = ({ refreshPlayerProfile }: {
 
     // Mutations
     const { mutateAsync: disconnectWalletAndClearCookies } = useDisconnectWalletBackend();
+    const { mutateAsync: authenticatePlayer } = useAuthPlayer();
 
     // Store
     const isGameSoundOn = useGameplayStore((s) => s.isGameSoundOn);
@@ -169,7 +167,7 @@ const HomeScreen = ({ refreshPlayerProfile }: {
                     {/* Panels */}
                     {showPanel === 'INBOX' && <InboxModal handlePanelClose={handlePanelClose} />}
                     {showPanel === 'BATTLE' && <BattleModal handlePanelClose={handlePanelClose} />}
-                    {showPanel === 'DAILY_STREAK' && <DailyStreakModal refreshPlayerProfile={refreshPlayerProfile} showPanel={showPanel} handlePanelClose={handlePanelClose} />}
+                    {showPanel === 'DAILY_STREAK' && <DailyStreakModal showPanel={showPanel} handlePanelClose={handlePanelClose} />}
                     {showPanel === 'FRENS' && <FrensModal handlePanelClose={handlePanelClose} />}
 
                     {/* Main content */}
@@ -178,13 +176,13 @@ const HomeScreen = ({ refreshPlayerProfile }: {
                             <div ref={textBox} className="text-center p-6 pt-[40%]">
 
                                 <img
-                                    src={assets.chopPanda}
+                                    src={assets.chopsuiPandaLogo}
                                     alt="Chop SUI Panda"
                                     className="max-w-[230px] mb-2 object-contain"
                                 />
 
                                 <button
-                                    className="mt-5 px-5 py-2 bg-gradient-to-r from-customBlue to-customLightBlue text-slate-800 font-Game rounded-lg shadow-lg hover:bg-customHoverBlue animated-button text-xl animate-Btn-pulse"
+                                    className="mt-5 mb-2 px-5 py-2 bg-gradient-to-r from-custom-blue to-custom-light-blue text-slate-800 font-Game rounded-lg shadow-lg hover:bg-custom-hoverBlue animated-button text-xl animate-Btn-pulse"
                                     onClick={handlePlay}
                                 >
                                     Play Now
@@ -192,12 +190,12 @@ const HomeScreen = ({ refreshPlayerProfile }: {
 
                                 {!isConnected ? (
                                     <div>
-                                        <ConnectButton>
+                                        <ConnectButton className='mt-2 '>
 
-                                            <button className="flex justify-center mt-3 mx-auto items-center gap-2 px-4 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-900 transition duration-300">
-                                                <WalletIcon />
-                                                <span className="text-xs">Connect Wallet</span>
-                                            </button>
+                                            <WalletIcon />
+                                            <span className="text-xs font-Game">Connect Wallet</span>
+                                            {/* <button className="flex justify-center mt-3 mx-auto items-center gap-2 px-4 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-900 transition duration-300">
+                                            </button> */}
 
                                         </ConnectButton>
                                     </div>

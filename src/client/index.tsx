@@ -16,6 +16,7 @@ import { DAppKitProvider } from '@mysten/dapp-kit-react';
 import notificationClientChannel from './channels/notificationClientChannel';
 import gameEventClientChannel from './channels/gameEventClientChannel';
 import { ToastProvider } from './context/ToastContext';
+import { PlayerAuthProvider } from './context/PlayerAuthContext';
 
 const queryClient = new QueryClient();
 new ModelenceQueryClient().connect(queryClient);
@@ -30,9 +31,11 @@ renderApp({
     <Suspense fallback={<LoadingSpinner fullScreen />}>
       <QueryClientProvider client={queryClient}>
         <DAppKitProvider dAppKit={dAppKit}>
-          <ToastProvider>
-            <RouterProvider router={router} />
-          </ToastProvider>
+          <PlayerAuthProvider>
+            <ToastProvider>
+              <RouterProvider router={router} />
+            </ToastProvider>
+          </PlayerAuthProvider>
         </DAppKitProvider>
       </QueryClientProvider>
     </Suspense>

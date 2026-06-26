@@ -5,7 +5,7 @@ import { MdOutlineTimer } from "react-icons/md";
 import { useToast } from "@/client/context/ToastContext";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { usePlayerStore } from "@/client/store/usePlayerStore";
-import { useOpenChest } from "@/client/hooks/player";
+import { useOpenChest, useRefreshPlayerProfile } from "@/client/hooks/player";
 import { ChestReward, ChestType, ROYAL_CHEST_REWARDS, TREASURE_CHEST_REWARDS } from "@/shared/constants/ChestConfig";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { earnAssets, introAssets } from "@/client/assets";
@@ -19,9 +19,6 @@ type CountAction = 'increment' | 'decrement';
 
 interface EarnScreenProps {
     showConnectWallet: () => void;
-    refreshPlayerProfile: (
-        options?: RefetchOptions
-    ) => Promise<QueryObserverResult<any>>;
 }
 
 interface RewardsGridProps {
@@ -85,7 +82,7 @@ const buttonClass =
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const EarnScreen = ({ showConnectWallet, refreshPlayerProfile }: EarnScreenProps) => {
+const EarnScreen = ({ showConnectWallet }: EarnScreenProps) => {
     const [activeTab, setActiveTab] = useState<TabType>('arena');
     const [treasureCount, setTreasureCount] = useState<number>(1);
     const [royalCount, setRoyalCount] = useState<number>(1);
@@ -116,6 +113,7 @@ const EarnScreen = ({ showConnectWallet, refreshPlayerProfile }: EarnScreenProps
 
     // Mutations & Queries
     const { mutateAsync: openChest } = useOpenChest();
+    const { refetch: refreshPlayerProfile } = useRefreshPlayerProfile();
 
     // ─── Chest countdown + GSAP ───────────────────────────────────────────────
 
@@ -291,7 +289,7 @@ const EarnScreen = ({ showConnectWallet, refreshPlayerProfile }: EarnScreenProps
                                 reign — but beware, challengers are coming.{' '}
                                 <span>Can you defend your crown?</span>
                             </p>
-                            <img src={assets.suiweek} alt="Sui Week" className="w-full rounded-lg mb-4" />
+                            <img src={assets.suiWeek} alt="Sui Week" className="w-full rounded-lg mb-4" />
                             <span className="flex items-center gap-2 text-slate-200 text-sm font-Game mb-2">
                                 <FaEye size="1.2rem" /> View Leaderboard
                             </span>

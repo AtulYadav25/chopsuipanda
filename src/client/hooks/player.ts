@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { playerClientModule } from "../modules";
 import { usePlayerActions } from "../store/usePlayerStore";
 import { typedMutationFn, typedQueryFn } from "./apiResponse";
@@ -46,31 +46,45 @@ export function useContinueDailyStreak() {
 /** Player Queries */
 
 export function useCheckAuth() {
-    return useQuery(playerClientModule.query('checkAuth', {}));
+    return useQuery({
+        ...playerClientModule.query('checkAuth', {}),
+        enabled: false,
+    });
 }
 
-export function useRefreshPlayerProfile({ includeSocial }: { includeSocial: boolean }) {
+export function useRefreshPlayerProfile() {
     const { setPlayer, mergePlayer } = usePlayerActions();
+    const includeSocialRef = useRef(false);
 
     const query = useQuery({
-        ...playerClientModule.query('getMe', { includeSocial }),
-        queryFn: typedQueryFn<PlayerPublic>(
-            playerClientModule.query('getMe', { includeSocial })
-        ),
+        ...playerClientModule.query('getMe', { includeSocial: includeSocialRef.current }),
+        queryFn: (context) =>
+            typedQueryFn<PlayerPublic>(
+                playerClientModule.query('getMe', { includeSocial: includeSocialRef.current })
+            )(context),
+        enabled: false, // manual only
     });
 
     useEffect(() => {
         if (query.data) {
             const incoming = query.data.data;
-            const { friends, friendRequestsReceived, ...rest } = query.data.data;
+            const { friends, friendRequestsReceived, ...rest } = incoming;
 
-            if (includeSocial) {
+            if (includeSocialRef.current) {
                 setPlayer(incoming);
             } else {
-                mergePlayer(rest); // only updates what server returned, preserves friends
+                mergePlayer(rest);
             }
         }
-    }, [query.data, includeSocial]);
+    }, [query.data]);
 
-    return query;
+    const refreshPlayerProfile = useCallback(
+        ({ includeSocial = false }: { includeSocial?: boolean } = {}) => {
+            includeSocialRef.current = includeSocial;
+            return query.refetch();
+        },
+        [query.refetch]
+    );
+
+    return { ...query, refetch: refreshPlayerProfile };
 }

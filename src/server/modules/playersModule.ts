@@ -473,7 +473,7 @@ const playerModule = new Module('player', {
         @authPlayer
         Used to register new players Or Refresh Auth Tokens
         */
-        async authPlayer({ walletAddress, message, signature }: any, { res, session }) {
+        async authPlayer({ walletAddress, message, signature }: { walletAddress: string, message: number[], signature: string }, { res, session }) {
             try {
 
 

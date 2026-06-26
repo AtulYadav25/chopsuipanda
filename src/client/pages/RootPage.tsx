@@ -37,7 +37,7 @@ function RootPage() {
     const { showToast } = useToast();
 
     //Mutations & Queries
-    const { isLoading: isLoadingPlayerProfile, refetch: refreshPlayerProfile } = useRefreshPlayerProfile({ includeSocial: true });
+    const { isLoading: isLoadingPlayerProfile, refetch: refreshPlayerProfile } = useRefreshPlayerProfile();
 
     // TODO : Add Loading Screen and make it wait untill everything is ready (assets, sounds, authenticated player)
 
@@ -111,10 +111,10 @@ function RootPage() {
         <MobileGameContainer>
             <>
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} progress={progress} />
-                {page === 'home' && <HomeScreen refreshPlayerProfile={refreshPlayerProfile} />}
-                {page === 'earn' && <EarnScreen refreshPlayerProfile={refreshPlayerProfile} showConnectWallet={showConnectWallet} />}
+                {page === 'home' && <HomeScreen />}
+                {page === 'earn' && <EarnScreen showConnectWallet={showConnectWallet} />}
                 {page === 'frens' && <FrensScreen changePage={handleChangeMenuPage} />}
-                {page === 'shop' && <ShopScreen refreshPlayerProfile={refreshPlayerProfile} showConnectWallet={showConnectWallet} />}
+                {page === 'shop' && <ShopScreen showConnectWallet={showConnectWallet} />}
                 {page === 'leaderboard' && <LeaderBoardScreen />}
                 {page === 'battleFren' && <BattleFrenGame handleEndGame={handleEndGame} />}
                 {page === 'game' && <PlayGameWrapper handleEndGame={handleEndGame} />}
