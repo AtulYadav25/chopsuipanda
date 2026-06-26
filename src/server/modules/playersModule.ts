@@ -633,7 +633,7 @@ const playerModule = new Module('player', {
 
         async levelUp(_, { req }) {
             try {
-                const { walletAddress } = req.user;
+                const { walletAddress } = requirePlayer(req);
 
                 // Find player in the database
                 const player = await dbPlayers.findOne({ walletAddress });
@@ -652,8 +652,10 @@ const playerModule = new Module('player', {
                 await await dbPlayers.updateOne(
                     { walletAddress },
                     {
-                        chi: player.chi - nextLevelConfig.upgradeCost,
-                        level: nextLevel
+                        $set: {
+                            chi: player.chi - nextLevelConfig.upgradeCost,
+                            level: nextLevel
+                        }
                     }
                 );
 

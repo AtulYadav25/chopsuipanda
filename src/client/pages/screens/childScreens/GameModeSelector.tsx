@@ -6,7 +6,7 @@ import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { gameModeAssets } from '@/client/assets';
 import { usePlayerStore } from '@/client/store/usePlayerStore';
 import { useGameplayStore } from '@/client/store/useGameplayStore';
-import { useLevelUp } from '@/client/hooks/player';
+import { useLevelUp, useRefreshPlayerProfile } from '@/client/hooks/player';
 import { useToast } from '@/client/context/ToastContext';
 import { GAME_TYPES, GameType } from '@/shared/constants/GameTypes';
 
@@ -84,6 +84,7 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
     // Store
     const player = usePlayerStore((s) => s.player);
     const setGameMode = useGameplayStore((s) => s.setGameMode);
+    const { refetch: refetchPlayerProfile } = useRefreshPlayerProfile();
 
     // Toast
     const { showToast } = useToast();
@@ -114,16 +115,22 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
 
     const handleUnlockLevel = async () => {
         if ((player?.chi ?? 0) < data[selectedGameModeIndex].amount) {
-            showToast({ type: "success", message: "Insufficient CHI Balance!" });
+            showToast({ type: "error", message: "Insufficient CHI Balance!" });
             return;
         }
 
         try {
             setLoadingFor({ visible: true, for: selectedGameModeIndex });
-            await levelUp({});
-            if (levelUpSuccess) {
-                showToast({ type: "success", message: "New Game Unlocked!" });
-            }
+            await levelUp({}, {
+                onSuccess: () => {
+                    showToast({ type: "success", message: "New Game Unlocked!" });
+                    refetchPlayerProfile();
+                },
+                onError: (err) => {
+                    console.error(err)
+                    showToast({ type: "error", message: "Failed to unlock game. Please try again." });
+                }
+            });
         } catch (error) {
             console.error("Level up failed:", error);
         } finally {
@@ -150,7 +157,8 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
         setSelectedGameModeIndex(index);
         setGameMode(gameIndexToType[index]);
         SoundManager.play('menuSwitch');
-        setIsNextDisabled((player?.level ?? 0) < selectedGameModeIndex)
+        setIsNextDisabled((player!.level) < (index + 1))
+        console.log(index, player!.level, (player!.level) < index + 1)
 
         itemRefs.current.forEach((ref, i) => {
             if (!ref) return;
