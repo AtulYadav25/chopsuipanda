@@ -21,6 +21,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     // in usePlayerStore.ts
     actions: {
         setPlayer: (player: PlayerPublic) => {
+            console.log("Okay Setting Player")
             set({ player });
         },
         mergePlayer: (partial: Partial<PlayerPublic>) => {

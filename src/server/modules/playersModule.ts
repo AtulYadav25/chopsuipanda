@@ -554,14 +554,24 @@ const playerModule = new Module('player', {
                     path: '/',
                 });
 
-                successResponse<{ isNewUser: boolean, player: PlayerPublic }>(
-                    {
-                        player: playerPublicSchema.parse(player),
-                        isNewUser
-                    },
-                    "User Authenticated"
-                )
+                const socialData = await getPlayerSocialData(player._id);
 
+                return successResponse<{ isNewUser: boolean, player: PlayerPublic }>({
+                    isNewUser,
+                    player: {
+                        username: player.username,
+                        chi: player.chi,
+                        chiEarned: player.chiEarned,
+                        powerUps: player.powerUps,
+                        referredBy: player.referredBy,
+                        level: player.level,
+                        friends: socialData?.friends ?? [],
+                        friendRequestsReceived: socialData?.pendingRequests ?? [],
+                        notifications: player.notifications,
+                        chestOpenings: player.chestOpenings,
+                        dailyStreak: player.dailyStreak,
+                    }
+                }, "User Authenticated");
 
             } catch (error) {
                 return throwError((error as Error).message)

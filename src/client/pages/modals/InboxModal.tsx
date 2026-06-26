@@ -17,8 +17,10 @@ const InboxModal = ({
         return `${day} ${month}`;
     }
 
+    if (!player) return;
+
     return (
-        <div className="font-Game fixed inset-0 bg-black/20 backdrop-blur z-200 flex items-center justify-center"> <div className="pt-[10%] z-[201] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-[82vh] w-[95vw] bg-white rounded-2xl shadow-lg p-6 flex z-[201] flex-col">
+        <div className="font-Game z-[10000] fixed inset-0 bg-black/20 backdrop-blur z-200 flex items-center justify-center"> <div className="pt-[10%] z-[201] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-[82vh] w-[95vw] bg-white rounded-2xl shadow-lg p-6 flex z-[201] flex-col">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl text-blue-800">Your Inbox</h2>

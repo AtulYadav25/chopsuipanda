@@ -1,9 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useState } from "react";
 import { playerClientModule } from "../modules";
 import { usePlayerActions } from "../store/usePlayerStore";
 import { typedMutationFn, typedQueryFn } from "./apiResponse";
 import { PlayerPublic } from "@/shared/schemas/player.schema";
+import { useQueryClient } from '@tanstack/react-query';
 
 
 export function useAuthPlayer() {
@@ -54,37 +55,42 @@ export function useCheckAuth() {
 
 export function useRefreshPlayerProfile() {
     const { setPlayer, mergePlayer } = usePlayerActions();
-    const includeSocialRef = useRef(false);
-
-    const query = useQuery({
-        ...playerClientModule.query('getMe', { includeSocial: includeSocialRef.current }),
-        queryFn: (context) =>
-            typedQueryFn<PlayerPublic>(
-                playerClientModule.query('getMe', { includeSocial: includeSocialRef.current })
-            )(context),
-        enabled: false, // manual only
-    });
-
-    useEffect(() => {
-        if (query.data) {
-            const incoming = query.data.data;
-            const { friends, friendRequestsReceived, ...rest } = incoming;
-
-            if (includeSocialRef.current) {
-                setPlayer(incoming);
-            } else {
-                mergePlayer(rest);
-            }
-        }
-    }, [query.data]);
+    const queryClient = useQueryClient();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<unknown>(null);
 
     const refreshPlayerProfile = useCallback(
-        ({ includeSocial = false }: { includeSocial?: boolean } = {}) => {
-            includeSocialRef.current = includeSocial;
-            return query.refetch();
+        async ({ includeSocial = false }: { includeSocial?: boolean } = {}) => {
+            const queryDescriptor = playerClientModule.query('getMe', { includeSocial });
+
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                const data = await queryClient.fetchQuery({
+                    ...queryDescriptor,
+                    queryFn: typedQueryFn<PlayerPublic>(queryDescriptor),
+                });
+
+                const incoming = data.data;
+                const { friends, friendRequestsReceived, ...rest } = incoming;
+
+                if (includeSocial) {
+                    setPlayer(incoming);
+                } else {
+                    mergePlayer(rest);
+                }
+
+                return { data, error: null };
+            } catch (err) {
+                setError(err);
+                return { data: null, error: err };
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [query.refetch]
+        [queryClient, setPlayer, mergePlayer]
     );
 
-    return { ...query, refetch: refreshPlayerProfile };
+    return { refetch: refreshPlayerProfile, isLoading, error };
 }

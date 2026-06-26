@@ -94,15 +94,23 @@ const PandaLoadingScreen = ({ ready }: PandaLoadingScreenProps) => {
         return () => clearInterval(interval);
     }, [ready]);
 
-    // When everything is ready, fade out and unmount
+    // When everything is ready, wait a random 1-3s "grace" delay, then fade out and unmount.
+    // This avoids the loading screen disappearing too abruptly even when the app
+    // technically finished loading instantly.
     useEffect(() => {
         if (!ready || isAuthenticating) return;
 
-        gsap.to(containerRef.current, {
-            opacity: 0,
-            duration: 1,
-            onComplete: () => setDone(true),
-        });
+        const delayMs = 1000 + Math.random() * 2000; // random delay between 1s and 3s
+
+        const timeoutId = setTimeout(() => {
+            gsap.to(containerRef.current, {
+                opacity: 0,
+                duration: 1,
+                onComplete: () => setDone(true),
+            });
+        }, delayMs);
+
+        return () => clearTimeout(timeoutId);
     }, [ready, isAuthenticating]);
 
     if (done) return null;

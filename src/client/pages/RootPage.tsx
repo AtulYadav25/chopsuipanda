@@ -93,7 +93,6 @@ function RootPage() {
 
     useEffect(() => {
         SoundManager.loadGroup('Global')
-        handleChangeMenuPage('home')
 
         return () => {
             SoundManager.unloadGroup('Global')

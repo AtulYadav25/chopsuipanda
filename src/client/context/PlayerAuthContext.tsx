@@ -6,6 +6,7 @@ import React, {
     useState,
     useCallback,
     type ReactNode,
+    useRef,
 } from "react";
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { toHex } from "@mysten/sui/utils";
@@ -69,10 +70,13 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
 
     // ── Auth flow ──────────────────────────────────────────────────────────────
 
+    const authInFlight = useRef(false);
+
     const checkForAuthentication = useCallback(async () => {
-        if (!account || isAuthenticated || isAuthenticating) return;
+        if (!account?.address || isAuthenticated || isAuthenticating || authInFlight.current) return;
 
         setIsAuthenticating(true);
+        authInFlight.current = true;
 
         try {
             const checkResult = await checkAuth();
@@ -128,6 +132,7 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
                 },
             );
         } finally {
+            authInFlight.current = false;
             setIsAuthenticating(false);
         }
     }, [

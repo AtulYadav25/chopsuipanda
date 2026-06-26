@@ -9,7 +9,6 @@ import { useToast } from "@/client/context/ToastContext";
 import { useContinueDailyStreak, useRefreshPlayerProfile } from "@/client/hooks/player";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { introAssets } from "@/client/assets";
-import { RefetchOptions, QueryObserverResult } from '@tanstack/react-query';
 
 // Register GSAP Draggable plugin
 gsap.registerPlugin(Draggable);
@@ -43,6 +42,12 @@ const DailyStreakModal = ({
     //Store Data
     const player = usePlayerStore((s) => s.player);
 
+    useEffect(() => {
+        console.log(player)
+    }, [player])
+
+    if (!player) return;
+
     const rewardsData = getRewardsForClientUI(player?.dailyStreak.currentStreak || 1);
     const lastLoginMissed = isStreakMissed(player?.dailyStreak.lastLogin);
     const currentDay = player!.dailyStreak.currentStreak
@@ -68,7 +73,7 @@ const DailyStreakModal = ({
                 gsap.fromTo(
                     greetImageRef.current,
                     { scale: 0.0 },
-                    { scale: 1.2, duration: 2, ease: "back.out(1.7)" }
+                    { scale: 1.05, duration: 2, ease: "back.out(1.7)" }
                 );
             }
 
@@ -300,7 +305,7 @@ const DailyStreakModal = ({
                                     `Congrats! You're on a ${currentDay}-day streak!`}
                             </h2>
                             <img
-                                src={lastLoginMissed ? assets.sadPanda : assets.chi}
+                                src={lastLoginMissed ? assets.sadPanda : assets.happyPanda}
                                 alt="Panda"
                                 ref={greetImageRef}
                                 className="w-30 h-30 object-contain mx-auto"

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Page, useGameplayStore } from "../store/useGameplayStore";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 
@@ -15,6 +15,15 @@ const BottomNavBar = ({ assets, ready, handleChangeMenuPage }: {
     const showConnectWallet = useGameplayStore((s) => s.showConnectWallet);
 
     const account = useCurrentAccount();
+
+    const hasInitialized = useRef(false);
+
+    useEffect(() => {
+        if (ready && !hasInitialized.current) {
+            hasInitialized.current = true;
+            handleChangeMenuPage('home');
+        }
+    }, [ready, handleChangeMenuPage]);
 
     if (isPlaying || hiddenOnPages.includes(page) || !ready) {
         return null;
