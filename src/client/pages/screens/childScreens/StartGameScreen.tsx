@@ -50,7 +50,6 @@ const StartGameScreen = ({
             {
                 scale: 1.2, opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => {
                     onClose();
-                    console.log("Closing, ", hasToStartGame)
                     hasToStartGame && handleStartGame()
                 }
             }

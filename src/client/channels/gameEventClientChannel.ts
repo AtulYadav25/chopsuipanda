@@ -34,17 +34,11 @@ export function onGameMessage(callback: GameMessageCallback): () => void {
 }
 
 const gameEventClientChannel = new ClientChannel<GameEventPayload>('gameEvents', (payload) => {
-    console.log("I got the payload");
-    console.log(payload)
-
     // Notify all registered listeners
     listeners.forEach((cb) => cb(payload));
 
     if (payload.type === 'newLevel') {
         // Update your Bamboo-game UI with payload.session
-
-        console.log("New Level Recevied: ");
-        console.log(payload.session)
         useGameplayStore.getState().setLastGameEvent(payload.session, 'newLevel');
     } else if (payload.type === 'continueGame') {
         // Resume gameplay with payload.session after payment

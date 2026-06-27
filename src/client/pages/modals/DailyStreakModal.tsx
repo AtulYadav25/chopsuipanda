@@ -42,10 +42,6 @@ const DailyStreakModal = ({
     //Store Data
     const player = usePlayerStore((s) => s.player);
 
-    useEffect(() => {
-        console.log(player)
-    }, [player])
-
     if (!player) return;
 
     const rewardsData = getRewardsForClientUI(player?.dailyStreak.currentStreak || 1);

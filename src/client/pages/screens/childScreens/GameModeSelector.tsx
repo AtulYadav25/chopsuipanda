@@ -158,7 +158,6 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
         setGameMode(gameIndexToType[index]);
         SoundManager.play('menuSwitch');
         setIsNextDisabled((player!.level) < (index + 1))
-        console.log(index, player!.level, (player!.level) < index + 1)
 
         itemRefs.current.forEach((ref, i) => {
             if (!ref) return;
