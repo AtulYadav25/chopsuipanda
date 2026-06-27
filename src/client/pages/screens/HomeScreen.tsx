@@ -14,7 +14,7 @@ import { useAuthPlayer, useDisconnectWalletBackend } from '@/client/hooks/player
 import { disConnectMyWallet } from '@/client/dapp-kit';
 import SoundManager from '@/client/utils/SoundManager';
 import { useToast } from '@/client/context/ToastContext';
-import { usePlayerStore } from '@/client/store/usePlayerStore';
+import { usePlayerActions, usePlayerStore } from '@/client/store/usePlayerStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -81,6 +81,7 @@ const HomeScreen = () => {
     const setGameSoundOn = useGameplayStore((s) => s.setIsGameSoundOn);
     const setPage = useGameplayStore((s) => s.setPage);
     const player = usePlayerStore((s) => s.player)
+    const { setPlayer } = usePlayerActions()
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
 
@@ -119,6 +120,7 @@ const HomeScreen = () => {
     const handleDisconnectWallet = async () => {
         await disconnectWalletAndClearCookies({});
         disConnectMyWallet();
+        setPlayer(null);
     };
 
     // ─── Render ───────────────────────────────────────────────────────────────

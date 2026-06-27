@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, useEffect, useMemo, useState } from "react";
 import { coreAssets, homeAssets, introAssets, menuIconAssets } from "../assets";
 import { useAssetLoader } from "../assets/useAssetLoader";
 import BottomNavBar from "../components/BottomNavbar";
@@ -18,12 +18,14 @@ import PlayGameWrapper from "./screens/PlayGameWrapper";
 import gsap from "gsap";
 import ChiBalanceModal from "./modals/ChiBalanceModal";
 import { usePlayerStore } from "../store/usePlayerStore";
+const OnboardPlayerScreen = lazy(() => import('./screens/childScreens/OnboardPlayer'));
 
 function RootPage() {
 
+    const [showOnboardPlayer, setShowOnboardPlayer] = useState(true);
+
     const page = useGameplayStore((s) => s.page);
     const setPage = useGameplayStore((s) => s.setPage);
-
     const player = usePlayerStore((s) => s.player)
 
 
@@ -116,6 +118,7 @@ function RootPage() {
     return (
         <MobileGameContainer>
             <>
+                {(player?.createdAt === player?.updatedAt) && showOnboardPlayer && <OnboardPlayerScreen onClose={() => setShowOnboardPlayer(false)} />}
                 {!hiddenOnPages.includes(page) && player && <ChiBalanceModal chiAmount={player?.chi} handleChangeMenuPage={handleChangeMenuPage} />}
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} />
                 {page === 'home' && <HomeScreen />}

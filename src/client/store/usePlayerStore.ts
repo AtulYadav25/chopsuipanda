@@ -9,7 +9,7 @@ interface PlayerState {
 
     // Actions
     actions: {
-        setPlayer: (player: PlayerPublic) => void;
+        setPlayer: (player: PlayerPublic | null) => void;
         mergePlayer: (partial: Partial<PlayerPublic>) => void;
     }
 }
@@ -20,7 +20,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     error: null,
     // in usePlayerStore.ts
     actions: {
-        setPlayer: (player: PlayerPublic) => {
+        setPlayer: (player: PlayerPublic | null) => {
             console.log("Okay Setting Player")
             set({ player });
         },
