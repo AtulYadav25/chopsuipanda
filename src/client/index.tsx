@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { renderApp, startWebsockets } from 'modelence/client';
+import { renderApp, startWebsockets, getWebsocketClientProvider } from 'modelence/client';
 import { toast } from 'react-hot-toast';
 import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -13,8 +13,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 
 import { dAppKit } from './dapp-kit';
 import { DAppKitProvider } from '@mysten/dapp-kit-react';
-import notificationClientChannel from './channels/notificationClientChannel';
-import gameEventClientChannel from './channels/gameEventClientChannel';
+import notificationClientChannel from '@/client/channels/notificationClientChannel';
+import gameEventClientChannel from '@/client/channels/gameEventClientChannel';
 import { ToastProvider } from './context/ToastContext';
 import { PlayerAuthProvider } from './context/PlayerAuthContext';
 
@@ -24,6 +24,10 @@ new ModelenceQueryClient().connect(queryClient);
 startWebsockets({
   channels: [notificationClientChannel, gameEventClientChannel],
 });
+
+notificationClientChannel.init();
+gameEventClientChannel.init();
+
 
 
 renderApp({
