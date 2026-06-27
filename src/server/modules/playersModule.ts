@@ -1,4 +1,4 @@
-import { LiveData, Module } from 'modelence/server'
+import { LiveData, Module, setAuthTokenCookie, setSessionUser } from 'modelence/server'
 import { time } from 'modelence'
 import { z } from 'zod'
 import { dbPlayers } from './stores/playerStore';
@@ -15,7 +15,7 @@ import { dbChiTransactions } from './stores/chiTransactionStore';
 import { pickReward } from '../utils/chestHelper';
 
 //Constants and Schemas
-import { LeaderboardEntry, PlayerPublic, playerPublicSchema } from '@/shared/schemas/player.schema';
+import { LeaderboardEntry, PlayerPublic } from '@/shared/schemas/player.schema';
 import { getRewardForDay } from '@/shared/constants/DailyLoginRewards';
 import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 import { TRANSACTION } from '@/shared/constants/chiTransaction';
@@ -155,7 +155,9 @@ const playerModule = new Module('player', {
 
                 return successResponse<PlayerPublic>({
                     username: finalPlayer.username,
+                    id: finalPlayer._id.toString(),
                     chi: finalPlayer.chi,
+                    walletAddress: finalPlayer.walletAddress,
                     chiEarned: finalPlayer.chiEarned,
                     powerUps: finalPlayer.powerUps,
                     referredBy: finalPlayer.referredBy,
@@ -165,6 +167,8 @@ const playerModule = new Module('player', {
                     notifications: finalPlayer.notifications,
                     chestOpenings: finalPlayer.chestOpenings,
                     dailyStreak: finalPlayer.dailyStreak,
+                    createdAt: finalPlayer.createdAt,
+                    updatedAt: finalPlayer.updatedAt
                 }, "Fetched Player Details Successfully");
 
             } catch (error) {
@@ -476,7 +480,6 @@ const playerModule = new Module('player', {
         async authPlayer({ walletAddress, message, signature }: { walletAddress: string, message: number[], signature: string }, { res, session }) {
             try {
 
-
                 if (!walletAddress || !message || !signature) {
                     throw new Error("Invalid Access!");
                 }
@@ -546,13 +549,9 @@ const playerModule = new Module('player', {
                 });
 
                 // ✅ Set socketToken as (authToken) cookie for 10 days (This is customized auth instead of modelence auth)
-                res.cookie('authToken', token, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'strict',
-                    maxAge: tenDaysInMilliseconds,
-                    path: '/',
-                });
+                await setSessionUser(session.authToken, player._id);
+
+                await setAuthTokenCookie(res, session.authToken);
 
                 const socialData = await getPlayerSocialData(player._id);
 
@@ -560,7 +559,9 @@ const playerModule = new Module('player', {
                     isNewUser,
                     player: {
                         username: player.username,
+                        id: player._id.toString(),
                         chi: player.chi,
+                        walletAddress: player.walletAddress,
                         chiEarned: player.chiEarned,
                         powerUps: player.powerUps,
                         referredBy: player.referredBy,
@@ -570,6 +571,8 @@ const playerModule = new Module('player', {
                         notifications: player.notifications,
                         chestOpenings: player.chestOpenings,
                         dailyStreak: player.dailyStreak,
+                        createdAt: player.createdAt,
+                        updatedAt: player.updatedAt
                     }
                 }, "User Authenticated");
 

@@ -18,6 +18,7 @@ const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid ObjectId');
 
 export const playerSchema = z.object({
     // Identity
+    id: z.string().optional(),
     username: z.string(),
     walletAddress: z.string(),
     referredBy: objectIdSchema.optional(),
@@ -56,6 +57,7 @@ export const playerSchema = z.object({
 });
 
 export const playerPublicSchema = playerSchema.pick({
+    id: true,
     username: true,
     walletAddress: true,
     chi: true,
