@@ -9,20 +9,13 @@
 // them (see notifications.ts in /methods for the access-control note).
 
 import { ServerChannel } from 'modelence/server';
-import configModule from '../configModule';
-import { PlayerAuthToken } from '@/server/utils/jwtHelper';
-import jwt from 'jsonwebtoken'
 import { NotificationPayload } from '@/shared/schemas/channels/notification.schema';
 
-const notificationServerChannel = new ServerChannel<NotificationPayload>('notifications', async ({ session }) => {
+const notificationServerChannel = new ServerChannel<NotificationPayload>('notifications', async ({ user }) => {
     // Only authenticated users can join
-    if (!session?.authToken) {
+    if (!user) {
         return false;
     }
-
-    const decoded = jwt.verify(session.authToken, configModule.getConfig('JWT_SECRET')) as PlayerAuthToken;
-
-    if (!decoded) return false;
 
     return true;
 }
