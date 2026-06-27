@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Page, useGameplayStore } from "../store/useGameplayStore";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
+import { useToast } from "../context/ToastContext";
 
 
 const hiddenOnPages = ['game', 'chestOpen', 'battleFren', 'tutorial']
@@ -12,9 +13,9 @@ const BottomNavBar = ({ assets, ready, handleChangeMenuPage }: {
 }) => {
     const page = useGameplayStore((s) => s.page);
     const isPlaying = useGameplayStore((s) => s.isPlaying);
-    const showConnectWallet = useGameplayStore((s) => s.showConnectWallet);
 
     const account = useCurrentAccount();
+    const { showToast } = useToast();
 
     const hasInitialized = useRef(false);
 
@@ -50,7 +51,8 @@ const BottomNavBar = ({ assets, ready, handleChangeMenuPage }: {
                         id="menu-frens"
                         onClick={() => {
                             if (!account?.address) {
-                                showConnectWallet();
+                                showToast({ type: 'info', message: 'Please Connect Wallet!' })
+                                handleChangeMenuPage('home');
                                 return;
                             }
                             handleChangeMenuPage('frens');
