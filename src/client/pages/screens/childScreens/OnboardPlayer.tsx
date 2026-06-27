@@ -122,22 +122,15 @@ const OnboardPlayerScreen = ({
                     className="bg-slate-800 rounded-lg shadow-lg w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3 p-6 relative"
                 >
                     <div>
-                        <h2 className="text-2xl font-bold mb-4 font-Game text-white text-center">
-                            🐼 WELCOME TO CHOPSUIPANDA!
+                        <h2 className="text-2xl font-Game text-white text-center mb-4">
+                            Welcome, Fren!
                         </h2>
 
                         <hr className="bg-blue-300 mb-4" />
 
-                        <p className="text-sm font-Game text-slate-200 text-center mb-1">
-                            CHOOSE YOUR PANDA NAME BEFORE YOU ENTER THE GROVE:
-                        </p>
-                        <p className="text-xs font-Game text-amber-400 text-center mb-3">
-                            ⚠ CHOOSE WISELY — YOU CANNOT CHANGE YOUR USERNAME LATER!
-                        </p>
-
                         <input
                             type="text"
-                            className="w-full font-Game px-4 py-2 mb-1 text-white bg-blue-700 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none tracking-wider disabled:opacity-60"
+                            className="w-full font-Game px-4 py-2 mb-2 text-white bg-blue-700 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none tracking-wider disabled:opacity-60"
                             placeholder="Enter your panda name"
                             value={username}
                             maxLength={25}
@@ -145,8 +138,8 @@ const OnboardPlayerScreen = ({
                             onChange={(e) => setUsername(e.target.value)}
                         />
 
-                        <p className="text-[11px] font-Game text-slate-400 text-center mb-3">
-                            3-25 CHARACTERS · LETTERS, NUMBERS & UNDERSCORES ONLY
+                        <p className="text-xs font-Game text-slate-400 text-center mb-4">
+                            No changing this later, choose wisely 🎋
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -155,7 +148,7 @@ const OnboardPlayerScreen = ({
                                 disabled={isSubmitting || username.trim().length === 0}
                                 className="game_btn font-Game bg-green-500 hover:bg-green-600 border-green-700 hover:border-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isSubmitting ? "CHOPPING..." : "START CHOPPING"}
+                                {isSubmitting ? "..." : "START CHOPPING"}
                             </button>
                         </div>
                     </div>

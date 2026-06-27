@@ -10,7 +10,7 @@ import FrensModal from '../modals/FrensModal';
 import BattleModal from '../modals/BattleModal';
 import InboxModal from '../modals/InboxModal';
 import StartGameScreen from './childScreens/StartGameScreen';
-import { useAuthPlayer, useDisconnectWalletBackend } from '@/client/hooks/player';
+import { useDisconnectWalletBackend } from '@/client/hooks/player';
 import { disConnectMyWallet } from '@/client/dapp-kit';
 import SoundManager from '@/client/utils/SoundManager';
 import { useToast } from '@/client/context/ToastContext';

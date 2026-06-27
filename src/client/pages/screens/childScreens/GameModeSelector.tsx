@@ -90,7 +90,7 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
     const { showToast } = useToast();
 
     // Mutations
-    const { mutateAsync: levelUp, isSuccess: levelUpSuccess } = useLevelUp();
+    const { mutateAsync: levelUp } = useLevelUp();
 
     const data: GameModeData[] = [
         {

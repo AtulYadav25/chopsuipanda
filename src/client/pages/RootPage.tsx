@@ -118,7 +118,7 @@ function RootPage() {
     return (
         <MobileGameContainer>
             <>
-                {(player?.createdAt === player?.updatedAt) && showOnboardPlayer && <OnboardPlayerScreen onClose={() => setShowOnboardPlayer(false)} />}
+                {(player?.createdAt === player?.updatedAt) && showOnboardPlayer && player !== null && <OnboardPlayerScreen onClose={() => setShowOnboardPlayer(false)} />}
                 {!hiddenOnPages.includes(page) && player && <ChiBalanceModal chiAmount={player?.chi} handleChangeMenuPage={handleChangeMenuPage} />}
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} />
                 {page === 'home' && <HomeScreen />}
