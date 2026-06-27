@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { gsap } from 'gsap';
-import { MdOutlineNetworkWifi } from "react-icons/md";
 import SoundManager from '@/client/utils/SoundManager';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { bambooShootGameAssets } from '@/client/assets';
-import { useBambooShootSessionStart, useCheckPingPong, useThrowBamboo } from '@/client/hooks/chopsuipanda';
+import { useBambooShootSessionStart, useThrowBamboo } from '@/client/hooks/chopsuipanda';
 import { GameSession } from '@/server/modules/stores/types';
-import gameEventClientChannel from '@/client/channels/gameEventClientChannel';
-import { useGameplayStore } from '@/client/store/useGameplayStore';
+import gameEventClientChannel, { onGameMessage } from '@/client/channels/gameEventClientChannel';
+import SimpleLoadingScreen from '../childScreens/SimpleLoadingScreen';
+import { usePlayerStore } from '@/client/store/usePlayerStore';
 
 // Game options
 const gameOptions = {
@@ -235,7 +235,7 @@ class PlayGame extends Phaser.Scene {
         let initialTargetTextureKey = "defaultTarget";
         if (this.levelRef.current.boss && this.levelRef.current.boss.score !== 0) {
             const bossLevel = this.levelRef.current.level;
-            const bossImagePath = new URL(`../../assets/knife_boss/boss${bossLevel}.png`, import.meta.url).href;
+            const bossImagePath = new URL(`../../../assets/knife_boss/boss${bossLevel}.webp`, import.meta.url).href;
             this.load.image(`boss${bossLevel}`, bossImagePath);
             this.load.start(); // Start loading the image immediately
             initialTargetTextureKey = `boss${bossLevel}`;
@@ -669,7 +669,7 @@ class PlayGame extends Phaser.Scene {
     }
 
     setupApples() {
-        if (!this.levelRef.current || !this.levelRef.current.apples) {
+        if (!this.levelRef.current || this.levelRef.current.apples.length === 0) {
             return;
         }
 
@@ -773,6 +773,9 @@ class PlayGame extends Phaser.Scene {
 
 
     addPreAttachedBamboos() {
+        if (this.levelRef.current.preAttachedBamboos.length === 0) {
+            return;
+        }
         const bambooAngles = this.levelRef.current.preAttachedBamboos;
 
         bambooAngles.forEach(angle => {
@@ -865,24 +868,12 @@ class PlayGame extends Phaser.Scene {
                             duration: gameOptions.throwSpeed * 4 / 1000,
                             ease: "power2.in",
                             onComplete: async () => {
-
-
                                 // Add it to the queue
                                 this.emitQueue.push(data);
 
-                                // Start processing if not already
-                                if (!this.isEmitInProgress) {
-                                    await this.processEmitQueue();
-                                }
-
-
                                 await this.submitMiniGameChallenge()
-
                             }
                         });
-
-
-
                     }
                 }
             });
@@ -980,6 +971,22 @@ class PlayGame extends Phaser.Scene {
         this.isEmitInProgress = false;
     }
 
+
+    // Resolves once the emit queue is fully drained, whether or not
+    // processing was already in-flight from another call site.
+    waitForEmitQueueToClear(): Promise<void> {
+        return new Promise((resolve) => {
+            const check = () => {
+                if (!this.isEmitInProgress && this.emitQueue.length === 0) {
+                    resolve();
+                } else {
+                    setTimeout(check, 50);
+                }
+            };
+            check();
+        });
+    }
+
     getThrowBambooData(): {
         appleAngles: number[],
         targetAngle: number[]
@@ -1018,6 +1025,7 @@ class PlayGame extends Phaser.Scene {
     handleBambooAttachment(targetAngle: number, gameOver = false) {
         this.canThrow = true;
         const bamboo = new BambooSprite(this, this.bamboo.x, this.bamboo.y, "knife");
+        this.add.existing(bamboo);
         bamboo.impactAngle = targetAngle;
         bamboo.setDisplaySize(this.BambooDisplaySizeWidth, this.BambooDisplaySizeHeight);
         this.bambooGroup.add(bamboo);
@@ -1028,7 +1036,7 @@ class PlayGame extends Phaser.Scene {
         this.shakeTarget();
     }
 
-    update(time: number, delta: number) {
+    update(_: number, delta: number) {
         if (!this.isGameReady) {
             return;
         }
@@ -1080,12 +1088,14 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
 
     //Hooks
     const account = useCurrentAccount();
-    const lastGameEvent = useGameplayStore((s) => s.lastGameEvent);
 
     //Mutations & Queries
     const { mutateAsync: startBambooGameSession } = useBambooShootSessionStart();
-    const { refetch: checkPingPong, isSuccess, isRefetching } = useCheckPingPong();
     const { mutateAsync: throwBamboo } = useThrowBamboo();
+
+
+    //Store Data
+    const player = usePlayerStore((s) => s.player)
 
     const gameOverRef = useRef(false);
 
@@ -1104,17 +1114,45 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
         }
     });
 
+    const handleEmitProcessesAndSubmitBattleScore = async () => {
+        if (gameOverRef.current === true) {
+            return
+        }
+        gameOverRef.current = true;
+
+        // 2. Drain the emit queue before ending the session
+        const scene = gameInstanceRef.current?.scene.getScene("PlayGame") as PlayGame | undefined;
+        if (scene) {
+            if (scene.isEmitInProgress) {
+                await scene.waitForEmitQueueToClear();
+            } else if (scene.emitQueue.length > 0) {
+                await scene.processEmitQueue();
+            }
+        }
+
+        await submitBattleScore();
+    }
+
+    const gameStartSessionFlightRef = useRef(false);
 
 
     useEffect(() => {
         const loadLevelData = async () => {
-            await startBambooGameSession({}, {
-                onSuccess: (data) => {
-                    setLevelData(data.bambooShootLevelData);
-                    playerScoreRef.current = data.bambooShootScore || 0;
-                    setIsGameInitialized(true);
+            if (gameStartSessionFlightRef.current) {
+                return;
+            }
+            gameStartSessionFlightRef.current = true;
+            const data = await startBambooGameSession({}, {
+                onSuccess: () => {
+
                 }
             });
+
+            setLevelData(data.bambooShootLevelData);
+            levelRef.current = data.bambooShootLevelData;
+            playerScoreRef.current = data.bambooShootScore || 0;
+            setIsGameInitialized(true);
+            gameStartSessionFlightRef.current = false;
         }
 
         loadLevelData();
@@ -1123,7 +1161,7 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
 
         const handleVisibilityChange = async () => {
             if ((document.hidden || document.visibilityState === "hidden") && !gameOverRef.current) {
-                await submitBattleScore();
+                await handleEmitProcessesAndSubmitBattleScore();
             }
         };
 
@@ -1132,7 +1170,7 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
                 return
             }
             // In some cases (especially on desktop), blur can indicate the user left the window
-            await submitBattleScore();
+            await handleEmitProcessesAndSubmitBattleScore();
 
         };
 
@@ -1150,38 +1188,40 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
     }, []);
 
     useEffect(() => {
-        if (!account?.address) return;
+        if (!player?.walletAddress) return;
 
-        gameEventClientChannel.joinChannel(account?.address)
+        const roomKey = player.walletAddress.toLowerCase();
+        gameEventClientChannel.joinChannel(roomKey)
 
         return () => {
-            gameEventClientChannel.leaveChannel(account?.address);
+            gameEventClientChannel.leaveChannel(roomKey);
         };
-    }, [account?.address]);
+    }, [player?.walletAddress]);
 
     useEffect(() => {
-        if (!lastGameEvent || !lastGameEvent.gameSession || !lastGameEvent.type) return;
+        const unsub = onGameMessage((msg) => {
+            if (msg.type === 'newLevel') {
+                setLevelData(msg.session.bambooShootLevelData);
+                playerScoreRef.current = msg.session.bambooShootScore!;
+                levelRef.current = msg.session.bambooShootLevelData;
 
-        if (lastGameEvent.type === 'newLevel') {
-            setLevelData(lastGameEvent.gameSession.bambooShootLevelData);
-            playerScoreRef.current = lastGameEvent.gameSession.bambooShootScore!;
-            levelRef.current = lastGameEvent.gameSession?.bambooShootLevelData;
-
-            const scene = gameInstanceRef.current?.scene?.scenes[0];
-            if (scene instanceof PlayGame) {
-                scene.transitionToNewLevel();
+                const scene = gameInstanceRef.current?.scene?.scenes[0];
+                if (scene instanceof PlayGame) {
+                    scene.transitionToNewLevel();
+                }
+            } else if (msg.type === 'continueGame') {
+                // TODO e.g. hide a "pay to continue" modal, unpause, restore session.knifeScore
             }
-        } else if (lastGameEvent.type === 'continueGame') {
-            // e.g. hide a "pay to continue" modal, unpause, restore session.knifeScore
-        }
-    }, [lastGameEvent]);
+        });
+        return unsub;
+    }, []);
+
 
     useEffect(() => {
         if (!isGameInitialized || !levelData || !ready) {
             return;
         }
 
-        levelRef.current = levelData;
 
         const config = {
             type: Phaser.CANVAS,
@@ -1207,10 +1247,10 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
         // Pass refs to the scene
         game.scene.start("PlayGame", {
             BambooShootGroupRef: BambooShootGroupRef,
-            levelRef: levelRef,
+            levelRef,
             walletAddress: account?.address,
             gameOverRef: gameOverRef,
-            submitBattleScore,
+            submitBattleScore: handleEmitProcessesAndSubmitBattleScore,
             playerScore: playerScoreRef,
             throwBamboo,
             assets
@@ -1228,48 +1268,12 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
         };
     }, [isGameInitialized, ready]);
 
-    const [ping, setPing] = useState(0);
-    const [showLowPingOverlay, setShowLowPingOverlay] = useState(false);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (isRefetching) return;
-            const start = Date.now();
-
-            checkPingPong({});
-
-            if (isSuccess) {
-                const latency = Date.now() - start;
-                setPing(latency);
-
-                // Show overlay if latency is too high (adjust as needed)
-                if (latency > 600) {
-                    setShowLowPingOverlay(true);
-                    setTimeout(() => setShowLowPingOverlay(false), 1000)
-                }
-            }
-        }, 3000); // check ping every 3 seconds
-
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
-
 
 
     return (
         <>
             {!isGameInitialized && (
-                <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    color: 'white',
-                    fontSize: '24px'
-                }}>
-                    Loading...
-                </div>
+                <SimpleLoadingScreen loading={true} noAnimation={true} />
             )}
 
             <div
@@ -1285,21 +1289,6 @@ const BambooShootGameBattle = ({ submitBattleScore }: {
                 }}
             />
 
-            {/* Ping Display */}
-            <div
-                className={`absolute top-2 right-2 text-xs z-50 ${ping < 150 ? 'text-green-500' : ping < 400 ? 'text-yellow-500' : 'text-red-500'
-                    }`}
-            >
-                {ping}ms
-            </div>
-
-
-            {/* Low Ping Overlay */}
-            {showLowPingOverlay && (
-                <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] inset-0 flex items-center justify-center bg-red-500/60 z-40 w-18 h-18 rounded-full">
-                    <MdOutlineNetworkWifi className="text-white text-3xl" />
-                </div>
-            )}
         </>
     );
 };

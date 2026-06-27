@@ -22,7 +22,7 @@ import { BAMBOO_GAME } from '../../utils/gameConstants';
 import { BossLevels } from '../../data/levels';
 import gameServerChannel from '../../channels/gameServerChannel';
 import type { GameSession } from '../../stores/types';
-import type { HttpContext } from 'modelence/types';
+import type { Context } from 'modelence/types';
 import { requirePlayer } from '@/server/utils/authPlayer';
 import { GAME_TYPES } from '@/shared/constants/GameTypes';
 
@@ -47,9 +47,9 @@ async function persistSession(userId: string, session: GameSession): Promise<voi
  * Starts a new bamboo game session for stage 1.
  * Replaces socket event "sessionStart".
  */
-export async function bambooShootSessionStart(_: unknown, { req }: HttpContext) {
+export async function bambooShootSessionStart(_: unknown, { req }: Context) {
 
-    const { userId } = requirePlayer(req);
+    const { userId } = requirePlayer(req!);
     if (!userId) {
         throw new Error('Not authenticated');
     }
@@ -61,6 +61,9 @@ export async function bambooShootSessionStart(_: unknown, { req }: HttpContext) 
 
     const sessionData: GameSession = {
         ...session,
+        treeChopScore: 0,
+        treeChopBranches: [],
+        treeChopLastTimeBonusSentAt: 0,
         isGamePaused: false,
         bambooShootLevelData: generateBambooLevelData(1),
         bambooShootStage: 1,
@@ -80,9 +83,9 @@ export async function bambooShootSessionStart(_: unknown, { req }: HttpContext) 
  * either advances to the next level/boss stage or pauses the game on an
  * illegal hit. Replaces socket event "throwbamboo".
  */
-export async function throwBamboo(args: unknown, { req }: HttpContext) {
+export async function throwBamboo(args: unknown, { req }: Context) {
 
-    const { userId, walletAddress } = requirePlayer(req);
+    const { userId, walletAddress } = requirePlayer(req!);
     if (!userId) {
         throw new Error('Not authenticated');
     }
@@ -141,7 +144,7 @@ export async function throwBamboo(args: unknown, { req }: HttpContext) {
             };
 
         persistSession(userId, updatedSession);
-        return true;
+        return { message: "Game Ends! Illegal Hit" };
     }
 
     // Legal hit: check for apple hits and update score/apples accordingly.
@@ -166,9 +169,10 @@ export async function throwBamboo(args: unknown, { req }: HttpContext) {
     const isLevelComplete =
         updatedLevelData.throwableBamboos + updatedLevelData.preAttachedBamboos.length === targetAngle.length;
 
+
     if (!isLevelComplete) {
         persistSession(userId, updatedSession);
-        return true;
+        return { message: "Level Not Completed" };
     }
 
     // Level complete: advance stage, generate the next level or boss fight,
@@ -195,10 +199,10 @@ export async function throwBamboo(args: unknown, { req }: HttpContext) {
 
     persistSession(userId, nextLevelSession);
 
-    gameServerChannel.broadcast(walletAddress, {
+    gameServerChannel.broadcast(walletAddress.toLowerCase(), {
         type: 'newLevel',
         session: nextLevelSession,
     });
 
-    return true;
+    return { message: "Level Completed" };
 }
