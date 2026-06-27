@@ -37,7 +37,7 @@
 //     flag it and we can scope out option 2 properly instead of guessing at
 //     a workaround here.
 
-import { Context, HttpContext } from 'modelence/types';
+import { Context } from 'modelence/types';
 import gameSessionStore from '../../stores/gameSessionStore';
 import { getSession, setSession } from '../../stores/liveGameCache';
 import type { GameSession } from '../../stores/types';
@@ -49,9 +49,9 @@ import { GAME_TYPES } from '@/shared/constants/GameTypes';
  * Replaces the old `socket.on("register", ...)` handler.
  * Call this once from the client right after the websocket connects.
  */
-export async function registerSession(ctx: HttpContext): Promise<void> {
+export async function registerSession(ctx: Context): Promise<void> {
     const { req } = ctx
-    const { userId } = requirePlayer(req);
+    const { userId } = requirePlayer(req!);
     if (!userId) return;
 
     const player = await dbPlayers.findById(userId)
@@ -84,9 +84,9 @@ export async function registerSession(ctx: HttpContext): Promise<void> {
  * "leaveGame" mutation fired on page unload, or a heartbeat sweep) since
  * there's no automatic disconnect hook — see note above.
  */
-export async function expireSession(ctx: HttpContext): Promise<void> {
+export async function expireSession(ctx: Context): Promise<void> {
     const { req } = ctx
-    const { userId } = requirePlayer(req);
+    const { userId } = requirePlayer(req!);
     if (!userId) return;
 
     const existing = getSession(userId);

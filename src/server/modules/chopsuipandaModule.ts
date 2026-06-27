@@ -15,7 +15,7 @@ import gameServerChannel from './channels/gameServerChannel';
 import { registerSession, expireSession } from './methods/games/sessionLifecycle';
 import { bambooShootSessionStart, throwBamboo } from './methods/games/knifeGame';
 import { treeChopSessionStart, chopTree } from './methods/games/treeGame';
-import { Context, HttpContext } from 'modelence/types';
+import { Context } from 'modelence/types';
 import { requirePlayer } from '../utils/authPlayer';
 import { dbPlayers } from './stores/playerStore';
 import { successResponse, throwError } from '../utils/responsHandler';
@@ -37,10 +37,10 @@ export default new Module('chopsuipanda', {
     mutations: {
         // Session lifecycle (replaces "register" socket event; see
         // sessionLifecycle.ts for the disconnect-hook limitation)
-        registerSession: (_args: unknown, ctx: HttpContext) => {
+        registerSession: (_args: unknown, ctx: Context) => {
             return registerSession(ctx);
         },
-        expireSession: (_args: unknown, ctx: HttpContext) => {
+        expireSession: (_args: unknown, ctx: Context) => {
             return expireSession(ctx);
         },
 
@@ -109,7 +109,7 @@ export default new Module('chopsuipanda', {
                     setSession(userId, newSession);
                     await gameSessionStore.updateOne({ userId }, { $set: newSession });
 
-                    gameServerChannel.broadcast(userId, {
+                    gameServerChannel.broadcast(walletAddress.toLowerCase(), {
                         type: 'continueGame',
                         session: newSession
                     })

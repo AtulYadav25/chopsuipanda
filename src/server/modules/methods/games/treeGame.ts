@@ -12,7 +12,7 @@ import gameSessionStore from '../../stores/gameSessionStore';
 import { getSession, setSession } from '../../stores/liveGameCache';
 import { generateInitialBranches, generateBranchRefill } from '../../utils/treeBranchGenerator';
 import { TREE_CHOP_BRANCH_POSITION, TREE_CHOP_BRANCH_TYPE, type GameSession, type TreeBranch } from '../../stores/types';
-import type { HttpContext } from 'modelence/types';
+import type { Context } from 'modelence/types';
 import { requirePlayer } from '@/server/utils/authPlayer';
 import { GAME_TYPES } from '@/shared/constants/GameTypes';
 import { successResponse, throwError } from '@/server/utils/responsHandler';
@@ -36,13 +36,13 @@ async function loadSession(userId: string): Promise<GameSession | null> {
 /**
  * Starts a new tree game session. Replaces socket event "tree-sessionStart".
  */
-export async function treeChopSessionStart(_: unknown, { req }: HttpContext) {
+export async function treeChopSessionStart(_: unknown, { req }: Context) {
 
     try {
 
 
 
-        const { userId } = requirePlayer(req);
+        const { userId } = requirePlayer(req!);
 
         if (!userId) {
             throw new Error('Invalid Access');
@@ -83,10 +83,10 @@ export async function treeChopSessionStart(_: unknown, { req }: HttpContext) {
  * generates and returns a fresh batch of branches.
  * Replaces socket event "chopTree".
  */
-export async function chopTree(args: { side: TreeBranch['position'], clientBranchId: TreeBranch['id'] }, { req }: HttpContext) {
+export async function chopTree(args: { side: TreeBranch['position'], clientBranchId: TreeBranch['id'] }, { req }: Context) {
 
     try {
-        const { userId } = requirePlayer(req);
+        const { userId } = requirePlayer(req!);
 
         const { side, clientBranchId } = args;
 
