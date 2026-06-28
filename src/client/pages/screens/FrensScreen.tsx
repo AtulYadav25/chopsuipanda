@@ -207,7 +207,7 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
 
                     {/* Bottom buttons */}
                     <div className="flex gap-3 w-[80%] mx-auto">
-                        <button className="flex items-center justify-end font-Game text-md pr-2 pl-3 relative w-full py-3 bg-[#55b75a] text-white rounded-lg border-b-[3px] border-[#409b44] hover:opacity-90 active:transform active:scale-95 transition-all">
+                        <button onClick={() => showToast({ type: 'success', message: "We're cooking your referal feature..." })} className="flex items-center justify-end font-Game text-md pr-2 pl-3 relative w-full py-3 bg-[#55b75a] text-white rounded-lg border-b-[3px] border-[#409b44] hover:opacity-90 active:transform active:scale-95 transition-all">
                             <div className="absolute top-1/2 left-[6%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                                 <img src={assets.chi} alt="CHI coin" className="w-12 h-12" />
                                 <span className="text-sm text-white bottom-[-5px] absolute bg-black/20 px-2 rounded-lg backdrop-blur">

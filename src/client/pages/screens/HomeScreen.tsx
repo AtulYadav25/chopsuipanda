@@ -85,7 +85,16 @@ const HomeScreen = () => {
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
 
-    const handleGameAudio = () => {
+    const handleGameAudio = async () => {
+
+        SoundManager.stopAll();
+        if (isGameSoundOn) {
+            SoundManager.unloadGroup('Global')
+        } else {
+            SoundManager.loadGroup('Global')
+            SoundManager.play('bgm');
+        }
+
         setGameSoundOn(!isGameSoundOn);
     };
 
