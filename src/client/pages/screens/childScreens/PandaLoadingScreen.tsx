@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { useAssetLoader } from "@/client/assets/useAssetLoader";
-import { pandaLoadingAssets } from "@/client/assets";
+// import { useAssetLoader } from "@/client/assets/useAssetLoader";
+// import { pandaLoadingAssets } from "@/client/assets";
 import { usePlayerAuth } from "@/client/context/PlayerAuthContext";
+import suiBackground from '../../../assets/suiBackground.webp';
+import suiPandaLoading from '../../../assets/coinsmash.webp';
+import TempleBackground from '../../../assets/MenuPage/frensBackground.webp';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,7 +37,12 @@ const PandaLoadingScreen = ({ ready }: PandaLoadingScreenProps) => {
     const { isAuthenticating } = usePlayerAuth();
 
     //Assets
-    const { assets } = useAssetLoader(pandaLoadingAssets);
+    // const { assets } = useAssetLoader(pandaLoadingAssets);
+    const assets = {
+        suiBackground,
+        suiPandaLoading,
+        TempleBackground
+    }
 
     const [welcomeMessage, setWelcomeMessage] = useState<string>('');
     const [done, setDone] = useState<boolean>(false);
