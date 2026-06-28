@@ -44,11 +44,11 @@ const soundList: Record<string, SoundConfig> = {
     pandaFall: { src: [pandaFall], volume: 0.7, group: 'TreeChopGame' },
 
     //BambooShootGame group
-    BambooShootBossEntry: { src: [BambooShootBossEntry], volume: 0.8, group: 'BambooShoot' },
-    BambooShootBossDefeat: { src: [BambooShootBossDefeat], volume: 0.8, group: 'BambooShoot' },
-    BambooShootHit: { src: [BambooShootHit], volume: 0.7, group: 'BambooShoot' },
-    BambooShootHitOver: { src: [BambooShootHitOver], volume: 0.9, group: 'BambooShoot' },
-    BambooShootHitSui: { src: [BambooShootHitSui], volume: 0.8, group: 'BambooShoot' },
+    bambooShootBossEntry: { src: [BambooShootBossEntry], volume: 0.8, group: 'BambooShoot' },
+    bambooShootBossDefeat: { src: [BambooShootBossDefeat], volume: 0.8, group: 'BambooShoot' },
+    bambooShootHit: { src: [BambooShootHit], volume: 0.7, group: 'BambooShoot' },
+    bambooShootHitOver: { src: [BambooShootHitOver], volume: 0.9, group: 'BambooShoot' },
+    bambooShootHitSui: { src: [BambooShootHitSui], volume: 0.8, group: 'BambooShoot' },
 
 
     // Global group

@@ -1076,6 +1076,7 @@ const TreeChopGameBattle = ({ submitBattleScore
                 characterFrame.current = CHARACTER_STATES.GAME_OVER;
 
                 isSocketEmitted = true;
+                SoundManager.play('treeChopGameOver');
 
                 setTimeout(() => {
                     characterFrame.current = CHARACTER_STATES.GAME_OVER;

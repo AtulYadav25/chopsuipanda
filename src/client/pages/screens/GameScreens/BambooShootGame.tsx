@@ -473,6 +473,8 @@ class PlayGame extends Phaser.Scene {
         overlay.setDepth(10);
         overlay.alpha = 0;
 
+        SoundManager.play('bambooShootBossEntry')
+
         // Create BOSS LEVEL text
         const bossText = this.add.text(
             this.gameWidth / 2,
@@ -813,7 +815,7 @@ class PlayGame extends Phaser.Scene {
             this.canThrow = false;
             this.levelRef.current.throwableBamboos--;
             this.updateRemainingBambooDisplay();
-            SoundManager.play('BambooShootHit');
+            SoundManager.play('bambooShootHit');
             gsap.to(this.bamboo, {
                 y: this.target.y + this.target.displayWidth / 2,
                 duration: gameOptions.throwSpeed / 1000,
@@ -896,7 +898,7 @@ class PlayGame extends Phaser.Scene {
             if (!apple.hit && (180 - Math.abs(apple.angle)) < (gameOptions.minAngle + 5)) {
                 apple.hit = true;
                 isAppleHitting = true;
-                SoundManager.play('BambooShootHitSui');
+                SoundManager.play('bambooShootHitSui');
                 apple.setFrame(1);
                 apple.setOrigin(0.5, 0.5);
                 apple.setScale(1);

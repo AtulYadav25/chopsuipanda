@@ -809,7 +809,7 @@ class PlayGame extends Phaser.Scene {
             this.canThrow = false;
             this.levelRef.current.throwableBamboos--;
             this.updateRemainingBambooDisplay();
-            SoundManager.play('BambooShootHit');
+            SoundManager.play('bambooShootHit');
             gsap.to(this.bamboo, {
                 y: this.target.y + this.target.displayWidth / 2,
                 duration: gameOptions.throwSpeed / 1000,
@@ -849,6 +849,7 @@ class PlayGame extends Phaser.Scene {
                     } else {
 
                         // Stop all animations and game updates
+                        SoundManager.play('bambooShootHitOver');
                         this.isGameReady = false;
                         gsap.killTweensOf(this.target);
                         this.handleBambooAttachment(targetCurrentAngle, true);
@@ -861,7 +862,6 @@ class PlayGame extends Phaser.Scene {
                         const data = this.getThrowBambooData();
 
 
-                        SoundManager.play('bambooShootHitOver');
                         gsap.to(this.bamboo, {
                             y: this.gameHeight + this.bamboo.height,
                             rotation: 5,
@@ -892,7 +892,7 @@ class PlayGame extends Phaser.Scene {
             if (!apple.hit && (180 - Math.abs(apple.angle)) < (gameOptions.minAngle + 5)) {
                 apple.hit = true;
                 isAppleHitting = true;
-                SoundManager.play('BambooShootHitSui');
+                SoundManager.play('bambooShootHitSui');
                 apple.setFrame(1);
                 apple.setOrigin(0.5, 0.5);
                 apple.setScale(1);

@@ -1196,6 +1196,7 @@ const TreeChopGame = ({ handleEndGame
                 // Regular branch collision - game over
                 characterFrame.current = CHARACTER_STATES.GAME_OVER;
                 isSocketEmitted = true;
+                SoundManager.play('treeChopGameOver');
 
                 setTimeout(() => {
                     characterFrame.current = CHARACTER_STATES.GAME_OVER;
