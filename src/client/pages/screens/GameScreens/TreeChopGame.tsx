@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import SoundManager from "@/client/utils/SoundManager";
-import { MdOutlineNetworkWifi } from "react-icons/md";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { treeChopGameAssets } from "@/client/assets";
 import { useToast } from "@/client/context/ToastContext";
-import { useCheckPingPong, useChopTree, useContinueGame, useEndGameSession, useTreeChopSessionStart } from "@/client/hooks/chopsuipanda";
+import { useChopTree, useContinueGame, useEndGameSession, useTreeChopSessionStart } from "@/client/hooks/chopsuipanda";
 import { TREE_CHOP_BRANCH_POSITION, TREE_CHOP_BRANCH_TYPE, TreeBranch } from "@/server/modules/stores/types";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import SimpleLoadingScreen from "../childScreens/SimpleLoadingScreen";
@@ -39,10 +38,6 @@ const TreeChopGame = ({ handleEndGame
 
     const sessionEndStamp = useRef<number>(0);
     const numOfContinues = useRef<number>(0);
-
-    const [ping, setPing] = useState(0);
-    const [showLowPingOverlay, setShowLowPingOverlay] = useState(false);
-
 
     // Hooks & Mutations
     const account = useCurrentAccount();
@@ -89,33 +84,6 @@ const TreeChopGame = ({ handleEndGame
         processMutationQueue();
     };
 
-
-    // useEffect(() => {
-    //     const interval = setInterval(() => {
-    //         if (isRefetching) return;
-    //         const start = Date.now();
-
-    //         checkPingPong({});
-
-    //         if (isSuccess) {
-    //             const latency = Date.now() - start;
-    //             setPing(latency);
-
-    //             // Show overlay if latency is too high (adjust as needed)
-    //             if (latency > 600) {
-    //                 setShowLowPingOverlay(true);
-    //                 setTimeout(() => setShowLowPingOverlay(false), 1000)
-    //             }
-    //         }
-    //     }, 3000); // check ping every 3 seconds
-
-    //     return () => {
-    //         clearInterval(interval);
-    //         mutationQueue.current = [];
-    //         isEmitting.current = false;
-    //     };
-    // }, []);
-
     const handleContinueGame = async () => {
         let timeDiff = (Date.now() - sessionEndStamp.current) / 1000
         if (timeDiff > 30) {
@@ -135,15 +103,19 @@ const TreeChopGame = ({ handleEndGame
 
         try {
             await continueTreeChopGame({}, {
-                onSuccess: (data) => {
+                onSuccess: () => {
                     setShowGameOver(false);
-                    timeBarProgress.current = 100;
+                    timeBarProgress.current = 100; //TODO : Probably this is not needed
                     numOfContinues.current += 1;
                     // TODO On Continue get the branches from User (Because JS file does that similar)
                     updateCircleTimer(20);
                     playerSide.current = playerSide.current === 'left' ? 'right' : 'left';
                     isChopping.current = false;
                     gameOverRef.current = false;
+                    characterFrame.current = CHARACTER_STATES.HIT_START;
+                    isGameStarted.current = true;
+                    showToast({ type: "success", message: "Game Continued" });
+                    setGameState('started')
                 },
                 onError: () => {
                     showToast({ type: "error", message: "Failed Transaction" });
@@ -204,12 +176,7 @@ const TreeChopGame = ({ handleEndGame
 
 
     const gameOver = async () => {
-
-        if (gameOverRef.current) {
-            return
-        }
         try {
-            gameOverRef.current = true;
             isGameStarted.current = false;
 
             setGameState("ended");
@@ -1228,16 +1195,11 @@ const TreeChopGame = ({ handleEndGame
             } else {
                 // Regular branch collision - game over
                 characterFrame.current = CHARACTER_STATES.GAME_OVER;
-
                 isSocketEmitted = true;
-
-
 
                 setTimeout(() => {
                     characterFrame.current = CHARACTER_STATES.GAME_OVER;
                     setTimeout(async () => {
-                        // gameOverFunc("You Lose");
-                        // gameOver();
                         setApiLoading({
                             loading: true,
                             to: 'gameSessionEnd'
@@ -1272,6 +1234,7 @@ const TreeChopGame = ({ handleEndGame
         if (gameOverRef.current) {
             return;
         }
+        gameOverRef.current = true;
 
         setShowGameOver(true);
 
@@ -1280,7 +1243,6 @@ const TreeChopGame = ({ handleEndGame
             side: TREE_CHOP_BRANCH_POSITION.NONE,
             clientBranchId
         };
-
 
         const emitGameOver = () => {
             return new Promise<void>((resolve, reject) => {
@@ -1305,6 +1267,34 @@ const TreeChopGame = ({ handleEndGame
 
     const gameStartedFlight = useRef<boolean>(false);
 
+    useEffect(() => {
+        const startSession = async () => {
+            try {
+                if (gameStartedFlight.current) return; // TODO: What about this? Check if game works correct with this condtion
+                gameStartedFlight.current = true;
+
+                const data = await startTreeChopSession({}, {
+                    onSuccess: () => {
+
+                    }
+                });
+
+                isGameStarted.current = true;
+                scoreRef.current = data.data.score;
+                branches.current = data.data.branches;
+                newBranches.current = data.data.newBranchesForClient;
+                setGameState("started");
+
+            } catch (e) {
+                console.error("Session start error:", e);
+                setGameState("error");
+                showToast({ type: "error", message: "Failed to start game session. Please retry." });
+            }
+        };
+
+        startSession();
+    }, [account?.address])
+
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -1322,36 +1312,6 @@ const TreeChopGame = ({ handleEndGame
                 chop(TREE_CHOP_BRANCH_POSITION.RIGHT);
             }
         };
-
-        const startSession = async () => {
-            try {
-
-                // if(gameStartedFlight.current) return; // TODO: What about this? Check if game works correct with this condtion
-                gameStartedFlight.current = true;
-
-                await startTreeChopSession({}, {
-                    onSuccess: (data) => {
-                        isGameStarted.current = true;
-                        scoreRef.current = data.data.score;
-                        branches.current = data.data.branches;
-                        newBranches.current = data.data.newBranchesForClient;
-                        setGameState("started");
-                    },
-                    onError: (err) => {
-                        console.error("Session start failed:", err);
-                        setGameState("error");
-                        showToast({ type: "error", message: "Invalid server response. Please retry." });
-                    }
-                });
-
-            } catch (e) {
-                console.error("Session start error:", e);
-                setGameState("error");
-                showToast({ type: "error", message: "Failed to start game session. Please retry." });
-            }
-        };
-
-        startSession();
 
         window.addEventListener("keydown", handleKeyDown);
 
@@ -1393,7 +1353,7 @@ const TreeChopGame = ({ handleEndGame
     return (
         <>
             {/* Show asset-loading screen until useAssetLoader finishes */}
-            {!ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
+            {gameState === 'starting' && !ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
 
             <div className="relative w-full h-screen overflow-hidden bg-sky-500">
 
@@ -1407,31 +1367,6 @@ const TreeChopGame = ({ handleEndGame
                     onRetry={handleRetryGame}
                 />}
 
-                {/* Ping Display */}
-                <div
-                    className={`absolute top-2 right-2 text-xs z-50 ${ping < 150 ? 'text-green-500' : ping < 400 ? 'text-yellow-500' : 'text-red-500'
-                        }`}
-                >
-                    {ping}ms
-                </div>
-
-
-                {/* Low Ping Overlay */}
-                {showLowPingOverlay && (
-                    <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] inset-0 flex items-center justify-center bg-red-500/60 z-40 w-18 h-18 rounded-full">
-                        <MdOutlineNetworkWifi className="text-white text-3xl" />
-                    </div>
-                )}
-
-                {/* Loading Game (Waiting for start game socket) Overlay */}
-                {gameState === 'starting' && (
-                    <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] inset-0 flex items-center justify-center bg-blue-500/60 z-40 w-6 h-6 rounded-full">
-                        <svg aria-hidden="true" role="status" className="inline w-4 h-4 text-white animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="#E5E7EB" />
-                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentColor" />
-                        </svg>
-                    </div>
-                )}
 
                 <canvas
                     ref={childCanvasRef}

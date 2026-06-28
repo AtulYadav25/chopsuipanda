@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import SoundManager from "@/client/utils/SoundManager";
-import { MdOutlineNetworkWifi } from "react-icons/md";
 import { useAssetLoader } from "@/client/assets/useAssetLoader";
 import { treeChopGameAssets } from "@/client/assets";
 import { useToast } from "@/client/context/ToastContext";
-import { useCheckPingPong, useChopTree, useTreeChopSessionStart } from "@/client/hooks/chopsuipanda";
+import { useChopTree, useTreeChopSessionStart } from "@/client/hooks/chopsuipanda";
 import { TREE_CHOP_BRANCH_POSITION, TREE_CHOP_BRANCH_TYPE, TreeBranch } from "@/server/modules/stores/types";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import SimpleLoadingScreen from "../childScreens/SimpleLoadingScreen";
@@ -27,16 +26,11 @@ const TreeChopGameBattle = ({ submitBattleScore
     const isGameStarted = useRef(false);
     const [gameState, setGameState] = useState("starting");
 
-    const [ping, setPing] = useState(0);
-    const [showLowPingOverlay, setShowLowPingOverlay] = useState(false);
-
-
     // Hooks & Mutations
     const account = useCurrentAccount();
     const { showToast } = useToast();
     const { mutateAsync: startTreeChopSession } = useTreeChopSessionStart();
     const { mutate: chopTree } = useChopTree();
-    const { refetch: checkPingPong, isSuccess, isRefetching } = useCheckPingPong();
 
     // ── Typed mutation queue (replaces socket emit queue) ────────────────────
     type ChopTreeArgs = { side: TreeBranch['position']; clientBranchId: TreeBranch['id'] };
@@ -75,40 +69,9 @@ const TreeChopGameBattle = ({ submitBattleScore
     };
 
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (isRefetching) return;
-            const start = Date.now();
-
-            checkPingPong({});
-
-            if (isSuccess) {
-                const latency = Date.now() - start;
-                setPing(latency);
-
-                // Show overlay if latency is too high (adjust as needed)
-                if (latency > 600) {
-                    setShowLowPingOverlay(true);
-                    setTimeout(() => setShowLowPingOverlay(false), 1000)
-                }
-            }
-        }, 3000); // check ping every 3 seconds
-
-        return () => {
-            clearInterval(interval);
-            mutationQueue.current = [];
-            isEmitting.current = false;
-        };
-    }, []);
-
-
     const gameOver = async () => {
 
-        if (gameOverRef.current) {
-            return
-        }
         setGameState("ended");
-        gameOverRef.current = true;
         isGameStarted.current = false;
         await submitBattleScore()
         SoundManager.play('treeChopGameOver');
@@ -1119,13 +1082,9 @@ const TreeChopGameBattle = ({ submitBattleScore
 
                 isSocketEmitted = true;
 
-
-
                 setTimeout(() => {
                     characterFrame.current = CHARACTER_STATES.GAME_OVER;
                     setTimeout(async () => {
-                        // gameOverFunc("You Lose");
-                        // gameOver();
                         handleEmitGameOverSocket()
                     }, 650);
                 }, 100);
@@ -1156,6 +1115,7 @@ const TreeChopGameBattle = ({ submitBattleScore
         if (gameOverRef.current) {
             return;
         }
+        gameOverRef.current = true;
 
         const clientBranchId = branches.current[visibleParts - (visibleParts - 1)].id as number;
         const dataPacket: ChopTreeArgs = {
@@ -1163,15 +1123,6 @@ const TreeChopGameBattle = ({ submitBattleScore
             clientBranchId
         };
 
-        // Optional delay logic
-        const maybeDelay = (): Promise<void> =>
-            new Promise<void>((resolve) => {
-                if (showCharacterAnimation.current || showDustAnimation.current) {
-                    setTimeout(resolve, 1200);
-                } else {
-                    resolve();
-                }
-            });
 
         const emitGameOver = () => {
             return new Promise<void>((resolve, reject) => {
@@ -1183,7 +1134,6 @@ const TreeChopGameBattle = ({ submitBattleScore
         };
 
         try {
-            await maybeDelay();          // Wait if animation is on
             await emitGameOver();        // Emit and wait for server response
             await gameOver();            // Then call game over logic
         } catch (err) {
@@ -1193,6 +1143,34 @@ const TreeChopGameBattle = ({ submitBattleScore
 
 
     const gameStartedFlight = useRef<boolean>(false);
+
+    useEffect(() => {
+        const startSession = async () => {
+            try {
+                if (gameStartedFlight.current) return; // TODO: What about this? Check if game works correct with this condtion
+                gameStartedFlight.current = true;
+                const data = await startTreeChopSession({}, {
+                    onSuccess: () => {
+
+                    }
+                });
+
+                isGameStarted.current = true;
+                scoreRef.current = data.data.score;
+                branches.current = data.data.branches;
+                newBranches.current = data.data.newBranchesForClient;
+                setGameState("started");
+
+            } catch (e) {
+                console.error("Session start error:", e);
+                setGameState("error");
+                showToast({ type: "error", message: "Failed to start game session. Please retry." });
+            }
+        };
+
+        startSession();
+
+    }, [account?.address])
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -1211,35 +1189,7 @@ const TreeChopGameBattle = ({ submitBattleScore
             }
         };
 
-        const startSession = async () => {
-            try {
 
-
-                // if(gameStartedFlight.current) return; // TODO: What about this? Check if game works correct with this condtion
-                gameStartedFlight.current = true;
-                await startTreeChopSession({}, {
-                    onSuccess: (data) => {
-                        isGameStarted.current = true;
-                        scoreRef.current = data.data.score;
-                        branches.current = data.data.branches;
-                        newBranches.current = data.data.newBranchesForClient;
-                        setGameState("started");
-                    },
-                    onError: (err) => {
-                        console.error("Session start failed:", err);
-                        setGameState("error");
-                        showToast({ type: "error", message: "Invalid server response. Please retry." });
-                    }
-                });
-
-            } catch (e) {
-                console.error("Session start error:", e);
-                setGameState("error");
-                showToast({ type: "error", message: "Failed to start game session. Please retry." });
-            }
-        };
-
-        startSession();
 
         window.addEventListener("keydown", handleKeyDown);
 
@@ -1281,25 +1231,9 @@ const TreeChopGameBattle = ({ submitBattleScore
     return (
         <>
             {/* Show asset-loading screen until useAssetLoader finishes */}
-            {!ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
+            {gameState === 'starting' && !ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
 
             <div className="relative w-full h-screen overflow-hidden bg-sky-500">
-
-                {/* Ping Display */}
-                <div
-                    className={`absolute top-2 right-2 text-xs z-50 ${ping < 150 ? 'text-green-500' : ping < 400 ? 'text-yellow-500' : 'text-red-500'
-                        }`}
-                >
-                    {ping}ms
-                </div>
-
-
-                {/* Low Ping Overlay */}
-                {showLowPingOverlay && (
-                    <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] inset-0 flex items-center justify-center bg-red-500/60 z-40 w-18 h-18 rounded-full">
-                        <MdOutlineNetworkWifi className="text-white text-3xl" />
-                    </div>
-                )}
 
                 {/* Loading Game (Waiting for start game socket) Overlay */}
                 {gameState === 'starting' && (
