@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import SoundManager from '@/client/utils/SoundManager';
 import TutorialOverlay from './TutorialOverlayScreen';
@@ -84,7 +84,17 @@ const GameModeSelector = ({ onBack, onNext }: GameModeSelectorProps) => {
     // Store
     const player = usePlayerStore((s) => s.player);
     const setGameMode = useGameplayStore((s) => s.setGameMode);
+    const gameMode = useGameplayStore((s) => s.gameMode);
     const { refetch: refetchPlayerProfile } = useRefreshPlayerProfile();
+
+    useEffect(() => {
+        if (!gameMode) return;
+        if (gameMode === GAME_TYPES.BAMBOO_SHOOT) {
+            setSelectedGameModeIndex(1);
+        } else {
+            setSelectedGameModeIndex(0);
+        }
+    }, [gameMode])
 
     // Toast
     const { showToast } = useToast();
