@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@modelence/react-query':
         specifier: ^1.2.5
-        version: 1.2.5(@tanstack/react-query@5.101.0(react@18.3.1))(modelence@0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@1.21.7))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8))(react@18.3.1)
+        version: 1.2.5(@tanstack/react-query@5.101.0(react@18.3.1))(modelence@0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@2.7.0))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8))(react@18.3.1)
       '@mysten/dapp-kit-react':
         specifier: ^2.1.3
         version: 2.1.3(@mysten/sui@2.18.0(typescript@5.9.3))(@types/react@18.3.31)(react@18.3.1)(typescript@5.9.3)
@@ -25,7 +25,7 @@ importers:
         version: 9.0.10
       '@vitejs/plugin-react':
         specifier: ^6.0.3
-        version: 6.0.3(vite@8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@1.21.7)(tsx@4.22.4))
+        version: 6.0.3(vite@8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.22.4))
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -40,10 +40,13 @@ importers:
         version: 9.0.3
       modelence:
         specifier: ^0.20.0
-        version: 0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@1.21.7))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8)
+        version: 0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@2.7.0))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8)
       phaser:
         specifier: ^4.2.0
         version: 4.2.0
+      qr-code-styling:
+        specifier: ^1.9.2
+        version: 1.9.2
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -61,7 +64,7 @@ importers:
         version: 6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       vite:
         specifier: ^8.1.0
-        version: 8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@1.21.7)(tsx@4.22.4)
+        version: 8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.22.4)
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -2987,6 +2990,13 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
+  qr-code-styling@1.9.2:
+    resolution: {integrity: sha512-RgJaZJ1/RrXJ6N0j7a+pdw3zMBmzZU4VN2dtAZf8ZggCfRB5stEQ3IoDNGaNhYY3nnZKYlYSLl5YkfWN5dPutg==}
+    engines: {node: '>=18.18.0'}
+
+  qrcode-generator@1.5.2:
+    resolution: {integrity: sha512-pItrW0Z9HnDBnFmgiNrY1uxRdri32Uh9EjNYLPVC2zZ3ZRIIEqBoDgm4DkvDwNNDHTK7FNkmr8zAa77BYc9xNw==}
+
   qs@6.15.2:
     resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
     engines: {node: '>=0.6'}
@@ -4089,9 +4099,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.1':
     optional: true
 
-  '@eslint-community/eslint-utils@4.9.1(eslint@10.5.0(jiti@1.21.7))':
+  '@eslint-community/eslint-utils@4.9.1(eslint@10.5.0(jiti@2.7.0))':
     dependencies:
-      eslint: 10.5.0(jiti@1.21.7)
+      eslint: 10.5.0(jiti@2.7.0)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.2': {}
@@ -4210,10 +4220,10 @@ snapshots:
     dependencies:
       '@lit/reactive-element': 2.1.2
 
-  '@modelence/react-query@1.2.5(@tanstack/react-query@5.101.0(react@18.3.1))(modelence@0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@1.21.7))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8))(react@18.3.1)':
+  '@modelence/react-query@1.2.5(@tanstack/react-query@5.101.0(react@18.3.1))(modelence@0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@2.7.0))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8))(react@18.3.1)':
     dependencies:
       '@tanstack/react-query': 5.101.0(react@18.3.1)
-      modelence: 0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@1.21.7))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8)
+      modelence: 0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@2.7.0))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8)
       react: 18.3.1
 
   '@mongodb-js/saslprep@1.4.11':
@@ -4700,10 +4710,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react@6.0.3(vite@8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@1.21.7)(tsx@4.22.4))':
+  '@vitejs/plugin-react@6.0.3(vite@8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.22.4))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@1.21.7)(tsx@4.22.4)
+      vite: 8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.22.4)
 
   '@wallet-standard/app@1.1.1':
     dependencies:
@@ -5500,9 +5510,9 @@ snapshots:
 
   eslint-visitor-keys@5.0.1: {}
 
-  eslint@10.5.0(jiti@1.21.7):
+  eslint@10.5.0(jiti@2.7.0):
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.5.0(jiti@1.21.7))
+      '@eslint-community/eslint-utils': 4.9.1(eslint@10.5.0(jiti@2.7.0))
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.23.5
       '@eslint/config-helpers': 0.6.0
@@ -5533,7 +5543,7 @@ snapshots:
       natural-compare: 1.4.0
       optionator: 0.9.4
     optionalDependencies:
-      jiti: 1.21.7
+      jiti: 2.7.0
     transitivePeerDependencies:
       - supports-color
 
@@ -6217,7 +6227,7 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.4
 
-  modelence@0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@1.21.7))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8):
+  modelence@0.20.0(@tanstack/react-query@5.101.0(react@18.3.1))(@types/node@20.19.43)(@types/react@18.3.31)(eslint@10.5.0(jiti@2.7.0))(lightningcss@1.32.0)(postcss@8.5.15)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(socket.io-adapter@2.5.8):
     dependencies:
       '@socket.io/mongo-adapter': 0.4.0(socket.io-adapter@2.5.8)
       '@tanstack/react-query': 5.101.0(react@18.3.1)
@@ -6241,7 +6251,7 @@ snapshots:
       tsx: 4.22.4
       typescript: 5.9.3
       vite: 6.4.3(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)
-      vite-plugin-eslint: 1.8.1(eslint@10.5.0(jiti@1.21.7))(vite@6.4.3(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4))
+      vite-plugin-eslint: 1.8.1(eslint@10.5.0(jiti@2.7.0))(vite@6.4.3(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4))
       winston: 3.19.0
       winston-elasticsearch: 0.19.0
       zod: 3.25.76
@@ -6537,6 +6547,12 @@ snapshots:
     optional: true
 
   punycode@2.3.1: {}
+
+  qr-code-styling@1.9.2:
+    dependencies:
+      qrcode-generator: 1.5.2
+
+  qrcode-generator@1.5.2: {}
 
   qs@6.15.2:
     dependencies:
@@ -7186,11 +7202,11 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite-plugin-eslint@1.8.1(eslint@10.5.0(jiti@1.21.7))(vite@6.4.3(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)):
+  vite-plugin-eslint@1.8.1(eslint@10.5.0(jiti@2.7.0))(vite@6.4.3(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)):
     dependencies:
       '@rollup/pluginutils': 4.2.1
       '@types/eslint': 8.56.12
-      eslint: 10.5.0(jiti@1.21.7)
+      eslint: 10.5.0(jiti@2.7.0)
       rollup: 2.80.0
       vite: 6.4.3(@types/node@20.19.43)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)
 
@@ -7209,7 +7225,7 @@ snapshots:
       lightningcss: 1.32.0
       tsx: 4.22.4
 
-  vite@8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@1.21.7)(tsx@4.22.4):
+  vite@8.1.0(@types/node@20.19.43)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.22.4):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -7220,7 +7236,7 @@ snapshots:
       '@types/node': 20.19.43
       esbuild: 0.27.7
       fsevents: 2.3.3
-      jiti: 1.21.7
+      jiti: 2.7.0
       tsx: 4.22.4
 
   webidl-conversions@4.0.2: {}
