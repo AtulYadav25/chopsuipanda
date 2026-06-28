@@ -31,7 +31,6 @@ export const playerSchema = {
     // Active game session
     gameStartedAt: schema.date().optional(), //Probably we dont need this really..
     hasPendingContinue: schema.boolean(),
-    continues: schema.number(),     // Max 3; enforced in app logic
 
     // Weekly session tracking (reset chiEarned when mismatched with admin sessionId)
     sessionId: schema.string(),
