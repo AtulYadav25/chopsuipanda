@@ -391,7 +391,8 @@ const battleMatchModule = new Module('battleMatch', {
                             winnerUsername: winner?.username ?? null,
                             isBattleCompleted: true,
                         }
-                    }
+                    },
+                    { returnDocument: 'after' }
                 );
 
                 if (isDraw) {
