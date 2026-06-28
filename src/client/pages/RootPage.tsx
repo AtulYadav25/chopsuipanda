@@ -18,6 +18,8 @@ import PlayGameWrapper from "./screens/PlayGameWrapper";
 import gsap from "gsap";
 import ChiBalanceModal from "./modals/ChiBalanceModal";
 import { usePlayerStore } from "../store/usePlayerStore";
+import GameNotification from "../components/GameNotification";
+import notificationClientChannel from "../channels/notificationClientChannel";
 const OnboardPlayerScreen = lazy(() => import('./screens/childScreens/OnboardPlayer'));
 
 function RootPage() {
@@ -27,6 +29,7 @@ function RootPage() {
     const page = useGameplayStore((s) => s.page);
     const setPage = useGameplayStore((s) => s.setPage);
     const player = usePlayerStore((s) => s.player)
+    const isNewPlayer = usePlayerStore((s) => s.isNewPlayer)
 
 
     const allAssets = useMemo(
@@ -99,7 +102,22 @@ function RootPage() {
     };
 
     useEffect(() => {
-        SoundManager.loadGroup('Global')
+        const roomKey = player?.walletAddress.toLowerCase()
+        if (roomKey) {
+            console.log("Joing Channel: ", roomKey)
+            notificationClientChannel.joinChannel(roomKey)
+        }
+
+        return () => {
+            if (roomKey) {
+                console.log("Leaving Channel: ", roomKey)
+                notificationClientChannel.leaveChannel(roomKey);
+            }
+        }
+    }, [player?.walletAddress])
+
+    useEffect(() => {
+        SoundManager.loadGroup('Global');
 
         return () => {
             SoundManager.unloadGroup('Global')
@@ -118,7 +136,10 @@ function RootPage() {
     return (
         <MobileGameContainer>
             <>
-                {(player?.createdAt === player?.updatedAt) && showOnboardPlayer && player !== null && <OnboardPlayerScreen onClose={() => setShowOnboardPlayer(false)} />}
+                {/* Notifications */}
+                <GameNotification />
+
+                {(isNewPlayer) && showOnboardPlayer && player !== null && <OnboardPlayerScreen onClose={() => setShowOnboardPlayer(false)} />}
                 {!hiddenOnPages.includes(page) && player && <ChiBalanceModal chiAmount={player?.chi} handleChangeMenuPage={handleChangeMenuPage} />}
                 <PandaLoadingScreen ready={ready && !isLoadingPlayerProfile} />
                 {page === 'home' && <HomeScreen />}

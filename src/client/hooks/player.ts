@@ -50,11 +50,12 @@ export function useCheckAuth() {
     return useQuery({
         ...playerClientModule.query('checkAuth', {}),
         enabled: false,
+        retry: false,
     });
 }
 
 export function useRefreshPlayerProfile() {
-    const { setPlayer, mergePlayer } = usePlayerActions();
+    const { setPlayer, mergePlayer, setIsNewPlayer } = usePlayerActions();
     const queryClient = useQueryClient();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<unknown>(null);
@@ -74,6 +75,7 @@ export function useRefreshPlayerProfile() {
 
                 const incoming = data.data;
                 const { friends, friendRequestsReceived, ...rest } = incoming;
+                setIsNewPlayer(new Date(incoming.createdAt).getTime() === new Date(incoming.updatedAt).getTime())
 
                 if (includeSocial) {
                     setPlayer(incoming);
@@ -89,7 +91,7 @@ export function useRefreshPlayerProfile() {
                 setIsLoading(false);
             }
         },
-        [queryClient, setPlayer, mergePlayer]
+        [queryClient, setPlayer, mergePlayer, setIsNewPlayer]
     );
 
     return { refetch: refreshPlayerProfile, isLoading, error };

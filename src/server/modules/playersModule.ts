@@ -504,6 +504,8 @@ const playerModule = new Module('player', {
                     isNewUser = true;
                     const username = await generateUniqueUsername();
 
+                    const playerCreatedAt = new Date();
+
                     player = await dbPlayers.create({
                         status: "active",
                         handle: username,
@@ -521,8 +523,8 @@ const playerModule = new Module('player', {
                         dailyStreak: { currentStreak: 1, lastLogin: new Date() },
                         chestOpenings: [],
                         notifications: [],
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
+                        createdAt: playerCreatedAt,
+                        updatedAt: playerCreatedAt,
                     });
                 }
 
