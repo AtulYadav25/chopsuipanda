@@ -5,6 +5,7 @@ import { useSubmitBattleScore } from "@/client/hooks/battleMatch.js";
 import { useToast } from "@/client/context/ToastContext.js";
 import BattleStartScreen from "./BattleStartScreen.js";
 import BattleEndScreen from "./BattleEndScreen.js";
+import BambooShootGameBattle from "./BambooShootGameBattle.js";
 //Lazy Imports
 // const KnifeNewGameChallenge = lazy(() => import('./ChallengeGames/KnifeNewGameChallenge.jsx'));
 const TreeChopGameBattle = lazy(() => import('./TreeChopGameBattle.jsx'));
@@ -45,22 +46,22 @@ const BattleFrenGame = ({ handleEndGame }: {
         }
         try {
             setLoading(true);
-            await submitBattleScoreToBackend({
+            const dataFromServer = await submitBattleScoreToBackend({
                 battleId: battleDetails?._id
             }, {
-                onSuccess: (dataFromServer) => {
-                    const { data } = dataFromServer;
-                    if (!data.battle || !data.winner) return;
-                    setBattleDetails(data.battle)
-                    battleDetailsRef.current = data.battle;
-                    setWinner({ username: data.winner });
+                onSuccess: () => {
 
-                    setLoading(false)
-                    setShowGameOver(true);
                 }
             });
+            const { data } = dataFromServer
+            if (!data.battle) return;
+            setBattleDetails(data.battle)
+            setLoading(false)
+            setShowGameOver(true);
+            battleDetailsRef.current = data.battle;
 
-
+            if (!data.winner) return;
+            setWinner({ username: data.winner ?? '' });
 
         } catch (error) {
             showToast({ type: "error", message: "Unable to connect to the server." });
@@ -85,7 +86,7 @@ const BattleFrenGame = ({ handleEndGame }: {
             />}
             <Suspense fallback={<SimpleLoadingScreen loading={true} noAnimation={true} />}>
                 {(battleDetails?.gameMode === 'TREE_CHOP' && !showBattleScreen) && <TreeChopGameBattle submitBattleScore={submitBattleScore} />}
-                {/* {(battleDetails?.gameMode === 'BAMBOO_SHOOT' && !showBattleScreen) && <BambooShootGameBattle submitBattleScore={submitBattleScore} />} */}
+                {(battleDetails?.gameMode === 'BAMBOO_SHOOT' && !showBattleScreen) && <BambooShootGameBattle submitBattleScore={submitBattleScore} />}
             </Suspense>
         </>
     );

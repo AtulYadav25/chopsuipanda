@@ -9,7 +9,7 @@ import { useGameplayStore } from "@/client/store/useGameplayStore";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface BattleEndScreenProps {
-    winner: { username: string };
+    winner: { username: string | null };
     onReturnHome: () => void;
     loading: boolean;
 }

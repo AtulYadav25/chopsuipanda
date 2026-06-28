@@ -23,7 +23,7 @@ export const battleMatchSchema = z.object({
 
     wagerAmount: z.number(),
 
-    winnerUsername: z.string().optional(),
+    winnerUsername: z.string().nullable().optional(),
 
     isBattleCompleted: z.boolean(),
 

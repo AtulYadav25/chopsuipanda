@@ -1353,7 +1353,7 @@ const TreeChopGame = ({ handleEndGame
     return (
         <>
             {/* Show asset-loading screen until useAssetLoader finishes */}
-            {gameState === 'starting' && !ready && <SimpleLoadingScreen loading={!ready} noAnimation={true} />}
+            {gameState === 'starting' && !ready && <SimpleLoadingScreen loading={true} noAnimation={true} />}
 
             <div className="relative w-full h-screen overflow-hidden bg-sky-500">
 

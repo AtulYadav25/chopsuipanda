@@ -1,8 +1,7 @@
 import { Module, ObjectId } from 'modelence/server'
 import { dbBattleMatches } from './stores/battleMatchStore';
 import { validateBody } from '../utils/validateBody';
-import { z } from 'zod'
-import { GAME_TYPE_VALUES, GAME_TYPES } from '@/shared/constants/GameTypes';
+import { GAME_TYPES } from '@/shared/constants/GameTypes';
 import { BattleMatch, SendBattleChallenge, sendBattleChallengeSchema } from '@/shared/schemas/battleMatch.schema';
 import { requirePlayer } from '../utils/authPlayer';
 import { successResponse, throwError } from '../utils/responsHandler';
@@ -69,7 +68,7 @@ const battleMatchModule = new Module('battleMatch', {
 
                 const [currentPlayer, friendPlayer] = await Promise.all([
                     dbPlayers.findOne({ walletAddress }),
-                    dbPlayers.findOne({ usernameLower: friendUsername }),
+                    dbPlayers.findOne({ usernameLower: friendUsername.toLowerCase() }),
                 ]);
 
                 if (!currentPlayer) return throwError("Player not found");
@@ -86,7 +85,7 @@ const battleMatchModule = new Module('battleMatch', {
                     return throwError("Insufficient CHI balance to place this wager");
                 }
                 if (wagerAmount >= friendPlayer.chi) {
-                    return throwError("Your friend has insufficient CHI balance for this wager");
+                    return throwError("Your friend has not enought CHI to compete");
                 }
 
                 // ─── Game Unlock Validations ──────────────────────────────────────
@@ -124,10 +123,12 @@ const battleMatchModule = new Module('battleMatch', {
                     dbPlayers.updateOne(
                         { walletAddress },
                         {
-                            chi: currentPlayer.chi - wagerAmount,
-                            gameStartedAt: battleStartedAt,
-                            continues: 0,
-                            currentScore: 0,
+                            $set: {
+                                chi: currentPlayer.chi - wagerAmount,
+                                gameStartedAt: battleStartedAt,
+                                continues: 0,
+                                currentScore: 0,
+                            }
                         }
                     ),
                 ]);
@@ -321,6 +322,11 @@ const battleMatchModule = new Module('battleMatch', {
                 if (!currentPlayer) return throwError("Player not found");
                 if (!activeBattle) return throwError("Active battle not found");
 
+
+                if ((currentPlayer.walletAddress === activeBattle.challenger.walletAddress) && activeBattle.challenger.played) {
+                    return throwError("Score already submitted");
+                }
+
                 // ─── Authorization Check ──────────────────────────────────────────
                 const isChallenger = activeBattle.challenger.walletAddress === walletAddress;
                 const isOpponent = activeBattle.opponent.walletAddress === walletAddress;
@@ -339,12 +345,18 @@ const battleMatchModule = new Module('battleMatch', {
                     const updatedBattle = await dbBattleMatches.findOneAndUpdate(
                         { _id: new ObjectId(battleId) },
                         {
-                            "challenger.score": playerScore,
-                            "challenger.played": true,
-                        }
+                            $set: {
+                                "challenger.score": playerScore,
+                                "challenger.played": true,
+                            }
+                        },
+                        { returnDocument: 'after' }  // 👈
                     );
 
-                    return successResponse(
+                    return successResponse<{
+                        winner: null | string,
+                        battle: BattleMatch
+                    }>(
                         { winner: null, battle: updatedBattle },
                         "Score submitted — waiting for opponent to play"
                     );
@@ -373,10 +385,12 @@ const battleMatchModule = new Module('battleMatch', {
                 const resolvedBattle = await dbBattleMatches.findOneAndUpdate(
                     { _id: new ObjectId(battleId) },
                     {
-                        "opponent.score": opponentScore,
-                        "opponent.played": true,
-                        winnerUsername: winner?.username ?? null,
-                        isBattleCompleted: true,
+                        $set: {
+                            "opponent.score": opponentScore,
+                            "opponent.played": true,
+                            winnerUsername: winner?.username ?? null,
+                            isBattleCompleted: true,
+                        }
                     }
                 );
 
@@ -416,7 +430,7 @@ const battleMatchModule = new Module('battleMatch', {
                     createdAt: new Date(),
                 };
 
-                const notificationOptions = { $position: 0, $slice: 60 };
+                const notificationOptions = { $position: 0, $slice: 30 };
 
                 await Promise.all([
                     dbPlayers.updateOne(
@@ -461,13 +475,15 @@ const battleMatchModule = new Module('battleMatch', {
                     )
                 ]);
 
+                // ✅ Winner notification
                 notifyBattle({
-                    toWalletAddress: loser!.walletAddress,
-                    fromUsername: winner!.username,
+                    toWalletAddress: winner!.walletAddress,
+                    fromUsername: loser!.username,
                     type: 'battleResult',
                     isWinner: true,
                     challengeId: battleId
                 });
+                // ✅ Loser notification
                 notifyBattle({
                     toWalletAddress: loser!.walletAddress,
                     fromUsername: winner!.username,

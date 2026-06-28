@@ -121,6 +121,9 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
                     setBattleDetails(data.data.battle);
                     changePage('battleFren');
                 },
+                onError: (err) => {
+                    showToast({ type: 'info', message: err.message })
+                }
             }
         );
         setShowWagerModal(false);

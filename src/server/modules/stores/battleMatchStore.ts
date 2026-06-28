@@ -22,7 +22,7 @@ export const battleMatchSchema = {
 
     wagerAmount: schema.number(),
 
-    winnerUsername: schema.string().optional(),
+    winnerUsername: schema.string().nullable().optional(),
 
     isBattleCompleted: schema.boolean(),
 

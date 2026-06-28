@@ -1,6 +1,6 @@
 import { useAcceptBattleChallenge, useGetMyActiveBattles, useRejectBattleChallenge } from '@/client/hooks/battleMatch'
-import { GAME_TYPES, GAME_TYPES_UI } from '@/shared/constants/GameTypes'
-import React, { useEffect } from 'react'
+import { useGameplayStore } from '@/client/store/useGameplayStore'
+import { GAME_TYPES_UI } from '@/shared/constants/GameTypes'
 
 const BattleModal = ({
     handlePanelClose
@@ -8,12 +8,51 @@ const BattleModal = ({
     handlePanelClose: () => void
 }) => {
 
+    //Store data
+    const setBattleDetails = useGameplayStore((s) => s.setBattleDetails);
+    const setGameMode = useGameplayStore((s) => s.setGameMode);
+    const setPage = useGameplayStore((s) => s.setPage);
+
     //Mutations & Queries
-    const { data, isLoading } = useGetMyActiveBattles();
+    const { data, isLoading, refetch: refetchActiveBattles } = useGetMyActiveBattles();
     const battles = data?.data
 
-    const { mutateAsync: handleAcceptChallenge } = useAcceptBattleChallenge();
-    const { mutateAsync: handleRejectChallenge } = useRejectBattleChallenge();
+    const { mutateAsync: acceptChallenge } = useAcceptBattleChallenge();
+    const { mutateAsync: rejectChallenge } = useRejectBattleChallenge();
+
+    const handleAcceptChallenge = async (battleId: string) => {
+        try {
+            const dataFromServer = await acceptChallenge({ battleId }, {
+                onSuccess: () => {
+
+                }
+            })
+            const { data } = dataFromServer;
+
+            if (!data.battle) return;
+            setBattleDetails(data.battle);
+            setGameMode(data.battle.gameMode);
+            setPage('battleFren')
+            handlePanelClose();
+
+        } catch (error) {
+
+        }
+    }
+
+    const handleRejectChallenge = async (battleId: string) => {
+        try {
+            await rejectChallenge({ battleId }, {
+                onSuccess: () => {
+
+                }
+            })
+            refetchActiveBattles();
+
+        } catch (error) {
+
+        }
+    }
 
     return (
         <div className="font-Game fixed inset-0 bg-black/20 backdrop-blur z-200 flex items-center justify-center z-[201]">
@@ -38,10 +77,10 @@ const BattleModal = ({
                                     {(battle.wagerAmount).toLocaleString()} CHI
                                 </h2>
                                 <div className="flex space-x-4">
-                                    <button onClick={() => handleAcceptChallenge({ battleId: battle._id })} className="px-6 py-2 bg-green-500 text-white rounded-md border-b-4 border-green-700 border-t-2 border-t-green-300">
+                                    <button onClick={() => handleAcceptChallenge(battle._id)} className="px-6 py-2 bg-green-500 text-white rounded-md border-b-4 border-green-700 border-t-2 border-t-green-300">
                                         Accept
                                     </button>
-                                    <button onClick={() => handleRejectChallenge({ battleId: battle._id })} className="px-6 py-2 bg-red-800 text-white rounded-md border-b-4 border-red-900 border-t-2 border-t-red-500">
+                                    <button onClick={() => handleRejectChallenge(battle._id)} className="px-6 py-2 bg-red-800 text-white rounded-md border-b-4 border-red-900 border-t-2 border-t-red-500">
                                         Reject
                                     </button>
                                 </div>
