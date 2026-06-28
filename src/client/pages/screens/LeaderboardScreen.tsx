@@ -14,7 +14,7 @@ interface RewardTier {
 }
 
 interface PlayerEntry {
-    name: string;
+    username: string;
     chiEarned: number;
     walletAddress: string;
     rank: number;
@@ -41,9 +41,11 @@ const formatNumberShort = (num: number | null | undefined): string => {
     const absNum = Math.abs(num);
     const sign = num < 0 ? '-' : '';
 
-    if (absNum >= 1_000_000_000) return `${sign}${(absNum / 1_000_000_000).toFixed(0)}B`;
-    if (absNum >= 1_000_000) return `${sign}${(absNum / 1_000_000).toFixed(2)}M`;
-    if (absNum >= 1_000) return `${sign}${(absNum / 1_000).toFixed(1)}K`;
+    const trim = (val: string) => val.replace(/\.0+$/, '');
+
+    if (absNum >= 1_000_000_000) return `${sign}${trim((absNum / 1_000_000_000).toFixed(0))}B`;
+    if (absNum >= 1_000_000) return `${sign}${trim((absNum / 1_000_000).toFixed(2))}M`;
+    if (absNum >= 1_000) return `${sign}${trim((absNum / 1_000).toFixed(1))}K`;
     return `${sign}${absNum}`;
 };
 
@@ -219,9 +221,9 @@ const LeaderBoardScreen = () => {
                                                     className={trophySizes[index]}
                                                 />
                                                 <p className="py-1">
-                                                    {(player?.name?.length ?? 0) > 7
-                                                        ? `${player?.name.slice(0, 7)}...`
-                                                        : player?.name}
+                                                    {(player?.username?.length ?? 0) > 7
+                                                        ? `${player?.username.slice(0, 7)}...`
+                                                        : player?.username}
                                                 </p>
                                                 <p className="text-center">
                                                     {player?.chiEarned?.toLocaleString()}
@@ -260,9 +262,9 @@ const LeaderBoardScreen = () => {
                                                         <span className="text-gray-400">{index + 4}</span>
                                                     </td>
                                                     <td className="w-[45%] font-medium py-2">
-                                                        {player.name.length > 10
-                                                            ? `${player.name.slice(0, 9)}...`
-                                                            : player.name}
+                                                        {player.username.length > 10
+                                                            ? `${player.username.slice(0, 9)}...`
+                                                            : player.username}
                                                     </td>
                                                     <td className="w-[20%] text-center py-2">
                                                         {player.chiEarned.toLocaleString()}
