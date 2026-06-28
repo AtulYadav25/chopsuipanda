@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import SoundManager from '@/client/utils/SoundManager';
 import { ChestReward, ChestType } from '@/shared/constants/ChestConfig';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
-import { introAssets } from '@/client/assets';
+import { earnAssets, introAssets } from '@/client/assets';
 
 
 const ChestOpeningAnimation = ({ isOpen, onClose, currentChestType, chestCount = 1, preSelectedRewards = [] }: {
@@ -20,7 +20,14 @@ const ChestOpeningAnimation = ({ isOpen, onClose, currentChestType, chestCount =
     const rewardsContainerRef = useRef(null);
 
     //Asset Laoder
-    const { assets } = useAssetLoader(introAssets);
+    const allAssets = useMemo(
+        () => ({
+            ...introAssets,
+            ...earnAssets
+        }),
+        []
+    );
+    const { assets } = useAssetLoader(allAssets);
 
     const [showClaimButton, setShowClaimButton] = useState(false);
     const [chestImage, setChestImage] = useState(assets.closedChest);

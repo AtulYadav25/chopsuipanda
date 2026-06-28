@@ -226,15 +226,19 @@ const playerModule = new Module('player', {
                     );
 
                     await dbPlayers.updateOne({ walletAddress }, {
-                        chi: player.chi - totalCost + totalChiAwarded,
-                        chestOpenings: updatedChestOpenings,
+                        $set: {
+                            chi: player.chi - totalCost + totalChiAwarded,
+                            chestOpenings: updatedChestOpenings,
+                        }
                     });
                 } else {
                     // Royal chests pay out SUI off-chain via a Redis-queued payout,
                     // settled later by a cron job — not credited to `chi` directly.
                     await dbPlayers.updateOne({ walletAddress }, {
-                        chi: player.chi - totalCost,
-                        chestOpenings: updatedChestOpenings,
+                        $set: {
+                            chi: player.chi - totalCost,
+                            chestOpenings: updatedChestOpenings,
+                        }
                     });
 
                     // TODO
