@@ -45,7 +45,7 @@ const friendshipModule = new Module('friendship', {
                 }
 
                 // Add new friend request
-                await dbFriendships.insertOne({
+                const friendRequest = await dbFriendships.create({
                     user1: requestingPlayer._id,
                     user2: targetPlayer._id,
                     status: "pending",
@@ -54,6 +54,14 @@ const friendshipModule = new Module('friendship', {
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 });
+
+
+                notifyFriendRequest({
+                    toWalletAddress: targetPlayer.walletAddress.toLowerCase(),
+                    fromUsername: requestingPlayer.username,
+                    friendRequestId: friendRequest?._id?.toString(),
+                    type: 'friendRequestSent'
+                })
 
                 return successResponse({}, "Friend request sent");
 
@@ -68,7 +76,7 @@ const friendshipModule = new Module('friendship', {
                 const { walletAddress } = requirePlayer(req);
 
                 const respondingPlayer = await dbPlayers.findOne({ walletAddress });
-                const requestingPlayer = await dbPlayers.findOne({ usernameLower: friendUserName });
+                const requestingPlayer = await dbPlayers.findOne({ usernameLower: friendUserName.toLowerCase() });
 
                 if (!respondingPlayer || !requestingPlayer) {
                     return throwError("Player not found");
@@ -94,10 +102,13 @@ const friendshipModule = new Module('friendship', {
                                 { user1: respondingPlayer._id, user2: requestingPlayer._id },
                                 { user1: requestingPlayer._id, user2: respondingPlayer._id },
                             ],
-                        }, {
-                        status: 'accepted',
-                        updatedAt: new Date(),
-                    }
+                        },
+                        {
+                            $set: {          // ← was missing
+                                status: 'accepted',
+                                updatedAt: new Date(),
+                            }
+                        }
                     );
                     // sendNotification('friendRequest', requestingPlayer.walletAddress, `Your friend ${respondingPlayer.name} has accepted your request`, 'ad');
 
@@ -118,7 +129,7 @@ const friendshipModule = new Module('friendship', {
 
                 if (accepted) {
                     notifyFriendRequest({
-                        toUserId: requestingPlayer._id.toString(),
+                        toWalletAddress: requestingPlayer.walletAddress.toLowerCase(),
                         fromUsername: respondingPlayer.username,
                         friendRequestId: existingFriendship?._id?.toString(),
                         type: 'friendRequestAccepted'

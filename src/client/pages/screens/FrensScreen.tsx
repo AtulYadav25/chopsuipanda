@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import GameModeSelector from './childScreens/GameModeSelector';
 import { usePlayerStore } from '@/client/store/usePlayerStore';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
@@ -64,6 +64,10 @@ const FrensScreen = ({ changePage }: FrensScreenProps) => {
 
     // Toast
     const { showToast } = useToast();
+
+    useEffect(() => {
+        refreshPlayerProfile({ includeSocial: true })
+    }, [])
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
 

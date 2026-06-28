@@ -21,16 +21,16 @@ import { z } from 'zod';
 import notificationServerChannel from '../../channels/notificationServerChannel';
 
 export async function notifyFriendRequest(args: unknown) {
-    const { toUserId, fromUsername, friendRequestId, type } = z
+    const { toWalletAddress, fromUsername, friendRequestId, type } = z
         .object({
-            toUserId: z.string(),
+            toWalletAddress: z.string(),
             fromUsername: z.string(),
             friendRequestId: z.string(),
             type: z.union([z.literal('friendRequestSent'), z.literal('friendRequestAccepted')]),
         })
         .parse(args);
 
-    notificationServerChannel.broadcast(toUserId, {
+    notificationServerChannel.broadcast(toWalletAddress, {
         type,
         message: type === 'friendRequestSent' ? `${fromUsername} wants to be your fren!` : `${fromUsername} is now your fren!`,
         referenceId: friendRequestId,
