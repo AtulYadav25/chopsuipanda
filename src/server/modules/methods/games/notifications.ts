@@ -32,7 +32,7 @@ export async function notifyFriendRequest(args: unknown) {
 
     notificationServerChannel.broadcast(toWalletAddress, {
         type,
-        message: type === 'friendRequestSent' ? `${fromUsername} wants to be your fren!` : `${fromUsername} is now your fren!`,
+        message: type === 'friendRequestSent' ? `@${fromUsername} wants to be your fren!` : `@${fromUsername} is now your fren!`,
         referenceId: friendRequestId,
     });
 }
@@ -45,13 +45,13 @@ export async function notifyBattle(args: { toWalletAddress: string, fromUsername
             fromUsername: z.string(),
             challengeId: z.string(),
             type: z.union([z.literal('battleChallenge'), z.literal('battleResult')]),
-            isWinner: z.boolean(),
+            isWinner: z.boolean().optional(),
         })
         .parse(args);
 
     notificationServerChannel.broadcast(toWalletAddress, {
         type,
-        message: type === 'battleChallenge' ? `${fromUsername} challenged you to battle!` : `You ${isWinner ? 'Won' : 'Lost'} against ${fromUsername} in battle!`,
+        message: type === 'battleChallenge' ? `@${fromUsername} challenged you to battle!` : `You ${isWinner ? 'Won' : 'Lost'} against @${fromUsername} in battle!`,
         referenceId: challengeId,
     });
 }
