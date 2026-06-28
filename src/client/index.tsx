@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ModelenceQueryClient } from '@modelence/react-query';
 
 import { router } from './router';
-// import favicon from './assets/favicon.svg';
+import favicon from './assets/favicon.ico';
 import './index.css';
 import './style.css'
 import LoadingSpinner from './components/LoadingSpinner';
@@ -48,6 +48,6 @@ renderApp({
     toast.error(error.message);
   },
   loadingElement: <LoadingSpinner fullScreen />,
-  // favicon
+  favicon
 });
 
