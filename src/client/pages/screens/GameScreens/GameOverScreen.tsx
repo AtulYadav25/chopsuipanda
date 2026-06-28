@@ -175,7 +175,7 @@ const GameOverScreen = ({
     // ─── Render ───────────────────────────────────────────────────────────────
 
     const continueExpired = countdown === 0;
-    const continueLabel = `Continue (${(numOfContinues + 1) * 5}K CHI) - ${countdown}s`;
+    const continueLabel = `Continue (${(numOfContinues + 1) * 1}K CHI) - ${countdown}s`;
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm font-Game z-[500]">

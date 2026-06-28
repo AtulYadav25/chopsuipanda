@@ -1270,7 +1270,16 @@ const BambooShootGame = ({ handleEndGame }: {
                     scene.transitionToNewLevel();
                 }
             } else if (msg.type === 'continueGame') {
-                // TODO e.g. hide a "pay to continue" modal, unpause, restore session.knifeScore
+                showToast({ type: "success", message: "Game Continued!" });
+                gameOverRef.current = false;
+                setLevelData(msg.session.bambooShootLevelData);
+                playerScoreRef.current = msg.session.bambooShootScore!;
+                levelRef.current = msg.session.bambooShootLevelData;
+
+                const scene = gameInstanceRef.current?.scene?.scenes[0];
+                if (scene instanceof PlayGame) {
+                    scene.transitionToNewLevel();
+                }
             }
         });
         return unsub;
@@ -1375,8 +1384,6 @@ const BambooShootGame = ({ handleEndGame }: {
             to: 'continue'
         });
 
-
-
         try {
             await continueGameSession({}, {
                 onSuccess: () => {
@@ -1394,9 +1401,6 @@ const BambooShootGame = ({ handleEndGame }: {
             setApiLoading({ loading: false, to: '' });
         }
     };
-
-
-
 
     return (
         <>
