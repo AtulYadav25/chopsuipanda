@@ -40,7 +40,8 @@ export const TREE_CHOP_BRANCH_POSITION = {
 export interface GameSession {
     userId: string;
     isGamePaused: boolean;
-    gameType: GameType
+    gameType: GameType;
+    numOfContinues?: number;
 
     // Bamboo Shoot game fields
     bambooShootStage?: number;

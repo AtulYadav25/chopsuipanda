@@ -516,7 +516,6 @@ const playerModule = new Module('player', {
                         merit: 0,
                         level: 1,
                         currentScore: 0,
-                        continues: 0,
                         hasPendingContinue: false,
                         sessionId: 'something', // TODO : Update this to current session id
                         dailyStreak: { currentStreak: 1, lastLogin: new Date() },

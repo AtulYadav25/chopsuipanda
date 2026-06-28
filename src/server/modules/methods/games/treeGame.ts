@@ -62,7 +62,11 @@ export async function treeChopSessionStart(_: unknown, { req }: Context) {
             treeChopScore: 0,
             treeChopBranches: [...branches, ...newBranchesForClient],
             treeChopLastTimeBonusSentAt: Date.now(),
-            gameType: GAME_TYPES.TREE_CHOP
+            gameType: GAME_TYPES.TREE_CHOP,
+            bambooShootLevelData: undefined,
+            bambooShootScore: 0,
+            bambooShootStage: 1,
+            numOfContinues: 0,
         };
 
         await persistSession(userId, sessionData);
@@ -124,6 +128,7 @@ export async function chopTree(args: { side: TreeBranch['position'], clientBranc
                 isGamePaused: true,
                 treeChopScore: currentScore + (scoringArray.length - 1),
                 treeChopBranches: slicedBranches,
+                numOfContinues: (session.numOfContinues ?? 0) + 1,
             };
 
             persistSession(userId, updatedSession);

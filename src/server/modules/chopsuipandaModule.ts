@@ -57,27 +57,24 @@ export default new Module('chopsuipanda', {
             try {
                 let { walletAddress, userId } = requirePlayer(req);
 
-                // Convert message (Uint8Array) to timestamp
-
                 // Find player in the database
                 const player = await dbPlayers.findOne({ walletAddress });
+                const sessionData = getSession(userId);
+
+                if (!sessionData) {
+                    return throwError("Player not found");
+                }
 
                 if (!player) {
                     return throwError("Player not found");
                 }
 
-                if (player.continues > 10) {
+                if ((sessionData.numOfContinues ?? 0) > 10) {
                     return throwError("You have used all your continue game credits.")
                 }
 
-                if (player.chi < (player.continues * 5000)) {
+                if (player.chi < ((sessionData.numOfContinues ?? 1) * 1000)) {
                     return throwError("Insufficient CHI Balance")
-                }
-
-                const sessionData = getSession(userId);
-
-                if (!sessionData) {
-                    return throwError("Player not found");
                 }
 
                 if (!sessionData.isGamePaused) {
@@ -86,14 +83,14 @@ export default new Module('chopsuipanda', {
 
 
                 // Increment continues if it's less than 10
-                if (player.continues <= 10) {
+                if ((sessionData.numOfContinues ?? 0) <= 10) {
 
                     await dbPlayers.updateOne(
                         { walletAddress },
                         {
                             $inc: {
-                                chi: -(player.continues * 5000),
-                                continues: 1
+                                chi: -((sessionData.numOfContinues ?? 1) * 1000),
+
                             },
                             $set: {
                                 hasPendingContinue: false,
@@ -159,7 +156,6 @@ export default new Module('chopsuipanda', {
                     $set: {
                         chiEarned: calculatedchi + player.chiEarned,
                         chi: player.chi + calculatedchi,
-                        continues: player.continues + 1,
                         hasPendingContinue: true
                     }
                 })

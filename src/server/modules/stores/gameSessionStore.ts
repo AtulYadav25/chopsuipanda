@@ -15,6 +15,7 @@ const gameSessionStore = new Store('gameSessions', {
         userId: schema.string(),
         isGamePaused: schema.boolean(),
         gameType: schema.enum(GAME_TYPE_VALUES),
+        numOfContinues: schema.number().optional(),
 
         // Bamboo Shoot game state (bamboo Hit  = Bamboo Shoot Game)
         bambooShootStage: schema.number().optional(),

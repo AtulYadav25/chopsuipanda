@@ -35,7 +35,6 @@ export const playerSchema = z.object({
     // Active game session
     gameStartedAt: z.date().optional(),
     hasPendingContinue: z.boolean(),
-    continues: z.number(), // Max 3; enforce with .max(3) if desired
 
     // Weekly session tracking
     sessionId: z.string(),

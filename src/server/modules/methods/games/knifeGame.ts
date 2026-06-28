@@ -68,7 +68,8 @@ export async function bambooShootSessionStart(_: unknown, { req }: Context) {
         bambooShootLevelData: generateBambooLevelData(1),
         bambooShootStage: 1,
         bambooShootScore: 0,
-        gameType: GAME_TYPES.BAMBOO_SHOOT
+        gameType: GAME_TYPES.BAMBOO_SHOOT,
+        numOfContinues: 0,
     };
 
     await persistSession(userId, sessionData);
@@ -135,12 +136,14 @@ export async function throwBamboo(args: unknown, { req }: Context) {
                 bambooShootScore: (session.bambooShootScore ?? 0) + scoreGained,
                 bambooShootLevelData: BossLevels[(session.bambooShootStage ?? 1) / BAMBOO_GAME.BOSS_STAGE_INTERVAL - 1],
                 isGamePaused: true,
+                numOfContinues: (session.numOfContinues ?? 0) + 1,
             }
             : {
                 ...session,
                 bambooShootScore: (session.bambooShootScore ?? 0) + scoreGained,
                 isGamePaused: true,
                 bambooShootLevelData: generateBambooLevelData(session.bambooShootStage ?? 1),
+                numOfContinues: (session.numOfContinues ?? 0) + 1,
             };
 
         persistSession(userId, updatedSession);
