@@ -17,7 +17,7 @@ interface NotificationState {
     flushQueue: () => void;
 }
 
-const AUTO_DISMISS_MS = 4000;
+const AUTO_DISMISS_MS = 3600;
 
 let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
