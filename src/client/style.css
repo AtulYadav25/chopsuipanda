@@ -27,20 +27,20 @@ input[type=number]::-webkit-outer-spin-button {
 
 @font-face {
     font-family: 'kungfu';
-    src: url('../assets/fonts/kungfumasterspaced.ttf');
+    src: url('./assets/fonts/kungfumasterspaced.ttf');
     font-weight: 400;
 }
 
 @font-face {
     font-family: 'kungfuexpanded';
-    src: url('../assets/fonts/kungfumasterexpand.ttf');
+    src: url('./assets/fonts/kungfumasterexpand.ttf');
     font-weight: 400;
 }
 
 
 @font-face {
     font-family: 'Game';
-    src: url('../assets/fonts/GameStation.ttf');
+    src: url('./assets/fonts/GameStation.ttf');
     font-weight: 400;
 }
 
