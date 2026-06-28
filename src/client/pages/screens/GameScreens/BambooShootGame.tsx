@@ -303,7 +303,9 @@ class PlayGame extends Phaser.Scene {
     }
 
     transitionToNewLevel() {
+        gsap.killTweensOf(this.bamboo);
         this.bamboo.y = this.gameHeight / 5 * 4;
+        this.bamboo.rotation = 0;
         if (this.isTransitioning) return;
         this.isTransitioning = true;
         this.canThrow = false;
