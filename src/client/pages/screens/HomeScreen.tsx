@@ -182,7 +182,7 @@ const HomeScreen = () => {
                     {/* Main content */}
                     <div className="home relative">
                         <div className="flex flex-col w-full items-center justify-start min-h-[100vh] text-white">
-                            <div ref={textBox} className="text-center p-6 pt-[40%]">
+                            <div ref={textBox} className="text-center p-6 pt-[50%]">
 
                                 <img
                                     src={assets.chopsuiPandaLogo}
@@ -198,7 +198,7 @@ const HomeScreen = () => {
                                 </button>
 
                                 {!isConnected ? (
-                                    <div>
+                                    <div className="flex flex-col items-center w-full">
                                         <ConnectButton className='mt-2 '>
 
                                             <WalletIcon />
@@ -207,6 +207,10 @@ const HomeScreen = () => {
                                             </button> */}
 
                                         </ConnectButton>
+                                        <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-yellow-500/30 bg-green-500 px-3 py-1 text-[10px] font-semibold text-white uppercase tracking-wider select-none font-sans">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                            TESTNET Network
+                                        </div>
                                     </div>
                                 ) : (
                                     <button
@@ -217,6 +221,8 @@ const HomeScreen = () => {
                                         <span className="text-xs">Disconnect Wallet</span>
                                     </button>
                                 )}
+
+
 
                             </div>
                         </div>
