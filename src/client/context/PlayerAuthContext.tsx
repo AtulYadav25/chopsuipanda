@@ -73,12 +73,15 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
     // ── Auth flow ──────────────────────────────────────────────────────────────
 
     const authInFlight = useRef(false);
+    const lastCheckedAddress = useRef<string | null>(null);
 
     const checkForAuthentication = useCallback(async () => {
         if (!account?.address || isAuthenticated || isAuthenticating || authInFlight.current) return;
 
         setIsAuthenticating(true);
         authInFlight.current = true;
+        if (lastCheckedAddress.current === account.address) return; // ← guard
+        lastCheckedAddress.current = account.address;
 
         try {
             const checkResult = await checkAuth();
@@ -158,6 +161,7 @@ export const PlayerAuthProvider = ({ children }: PlayerAuthProviderProps) => {
         } else {
             // Wallet was disconnected externally (e.g. user removed from wallet UI)
             setIsAuthenticated(false);
+            lastCheckedAddress.current = null;
         }
     }, [account?.address]); // eslint-disable-line react-hooks/exhaustive-deps
     // ↑ intentionally only reacts to address change, not the callback ref
