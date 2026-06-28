@@ -314,7 +314,7 @@ class PlayGame extends Phaser.Scene {
         // Update target image for new level
         if (this.levelRef.current.boss && this.levelRef.current.boss.score !== 0) {
             const bossLevel = this.levelRef.current.level;
-            const bossImagePath = new URL(`../../assets/knife_boss/boss${bossLevel}.png`, import.meta.url).href;
+            const bossImagePath = new URL(`../../../assets/knife_boss/boss${bossLevel}.webp`, import.meta.url).href;
             this.load.image(`boss${bossLevel}`, bossImagePath);
             this.load.start(); // Start loading the image immediately
             this.load.once(Phaser.Loader.Events.COMPLETE, () => {
