@@ -21,9 +21,6 @@ export default function LoadingSpinner({
         @keyframes ring-spin {
           to { transform: rotate(360deg); }
         }
-        @keyframes ring-spin-rev {
-          to { transform: rotate(-360deg); }
-        }
         @keyframes particle-rise {
           0% { transform: translateY(0) scale(0.6); opacity: 0; }
           15% { opacity: 0.9; }
@@ -94,15 +91,6 @@ export default function LoadingSpinner({
               strokeDasharray="40 218"
               style={{ filter: "drop-shadow(0 0 4px #7FCFFF)" }}
             />
-          </svg>
-
-          {/* inner counter-rotating dashed ring */}
-          <svg
-            className="absolute w-20 h-20"
-            style={{ animation: "ring-spin-rev 3.4s linear infinite" }}
-            viewBox="0 0 100 100"
-          >
-            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(91,108,255,0.35)" strokeWidth="1.5" strokeDasharray="3 9" />
           </svg>
 
           {/* glowing droplet core */}
