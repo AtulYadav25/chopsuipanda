@@ -5,7 +5,6 @@ import { dbPlayers } from './stores/playerStore';
 import { CHI_SHOP_ITEMS } from '@/shared/constants/ChiShopConfig';
 import configModule from './configModule';
 import { ChiPurchaseToken, generateJWTToken, verifyJWTToken } from '../utils/jwtHelper';
-import { time } from 'modelence';
 import SuiTransactionVerifier from '../utils/suiTransactionVerifier';
 import { dbChiTransactions } from './stores/chiTransactionStore';
 import { TRANSACTION } from '@/shared/constants/chiTransaction';

@@ -22,7 +22,6 @@ import { LEVEL_CONFIG } from '@/shared/constants/LevelConfig';
 import { TRANSACTION } from '@/shared/constants/chiTransaction';
 import {
     ChestReward,
-    ChestType,
     getChestRewardTable,
     getChestCost,
     DAILY_CHEST_OPEN_LIMIT,

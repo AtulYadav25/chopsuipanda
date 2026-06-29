@@ -160,7 +160,7 @@ const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
                 }
             );
         } catch (e) {
-            showToast({ type: 'error', message: 'Transaction Failed: Insufficient Balance' });
+            showToast({ type: 'error', message: 'Transaction Failed' });
         } finally {
             setApiLoading({ loading: false, to: null });
         }
