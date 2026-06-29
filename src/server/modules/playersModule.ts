@@ -13,6 +13,7 @@ import { validateBody } from '../utils/validateBody';
 import { generateJWTToken, PlayerAuthToken } from '../utils/jwtHelper';
 import { dbChiTransactions } from './stores/chiTransactionStore';
 import { pickReward } from '../utils/chestHelper';
+import suiClient from '../utils/suiClient';
 
 //Constants and Schemas
 import { LeaderboardEntry, PlayerPublic } from '@/shared/schemas/player.schema';
@@ -495,6 +496,7 @@ const playerModule = new Module('player', {
                 try {
                     await verifyPersonalMessageSignature(messageBytes, signature, {
                         address: walletAddress,
+                        client: suiClient
                     });//Verify the Message is valid, also verifying the message is valid for given address
                 } catch (err) {
                     return throwError("Invalid Signature");
