@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://i.ibb.co/20NRZbVK/Gemini-Generated-Image-h6n0qih6n0qih6n0-1-1.png" alt="Chop SUI Panda" width="280" />
+  <img src="https://i.ibb.co/20NRZbVK/Gemini-Generated-Image-h6n0qih6n0qih6n0-1-1.png" alt="Chop SUI Panda" width="100%" />
 </p>
 
 <h1 align="center">Chop SUI Panda</h1>
