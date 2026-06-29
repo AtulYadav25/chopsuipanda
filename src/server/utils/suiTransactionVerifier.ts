@@ -1,38 +1,10 @@
 import { SuiGrpcClient } from '@mysten/sui/grpc';
 import { isValidTransactionDigest } from '@mysten/sui/utils';
 import configModule from '../modules/configModule';
-
-const SUI_NETWORK = configModule.getConfig('SUI_NETWORK') ?? 'testnet';
-const MODULE_NAME = configModule.getConfig('MODULE_NAME');
-const PACKAGE_ID = configModule.getConfig('PACKAGE_ID');
+import suiClient from './suiClient';
 
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export type SuiNetwork =
-    | 'devnet'
-    | 'testnet'
-    | 'mainnet';
-
-export function getSuiNetworkUrl(
-    network: SuiNetwork,
-): string {
-    switch (network) {
-        case 'devnet':
-            return 'https://fullnode.devnet.sui.io:443';
-
-        case 'testnet':
-            return 'https://fullnode.testnet.sui.io:443';
-
-        case 'mainnet':
-            return 'https://fullnode.mainnet.sui.io:443';
-
-        default:
-            throw new Error(
-                `Unsupported SUI network: ${network}`,
-            );
-    }
 }
 
 interface VerifyTransactionOptions {
@@ -52,12 +24,9 @@ interface VerifyTransactionResult {
 export class SuiTransactionVerifier {
     private client: SuiGrpcClient;
 
-    constructor(network: string = SUI_NETWORK) {
+    constructor() {
 
-        this.client = new SuiGrpcClient({
-            network: network as SuiNetwork,
-            baseUrl: getSuiNetworkUrl(network as SuiNetwork),
-        });
+        this.client = suiClient
     }
 
     async verifyTransaction(
@@ -73,6 +42,9 @@ export class SuiTransactionVerifier {
             if (!isValidTransactionDigest(txDigest)) {
                 throw new Error('Invalid transaction digest format');
             }
+
+            const MODULE_NAME = configModule.getConfig('MODULE_NAME');
+            const PACKAGE_ID = configModule.getConfig('PACKAGE_ID');
 
             await delay(3000);
 
@@ -90,7 +62,6 @@ export class SuiTransactionVerifier {
             if (!txResponse) {
                 throw new Error('Transaction not found');
             }
-            // TODO : Check how the txResponse looks like!
 
             // TODO : this is not real txTimestamp check from console log where i could get the timestamp
             const txTimestamp = new Date(
@@ -139,7 +110,7 @@ export class SuiTransactionVerifier {
                 !purchaseEventSmartContract ||
                 !purchaseEventSmartContract.json ||
                 typeof purchaseEventSmartContract.json !== 'object' ||
-                !('amount' in purchaseEventSmartContract.json) // TODO : Check if console log really has amount field in json
+                !('amount' in purchaseEventSmartContract.json)
             ) {
                 throw new Error("Invalid Transaction")
             }

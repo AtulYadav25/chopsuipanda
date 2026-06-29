@@ -60,9 +60,7 @@ const suiModule = new Module('sui', {
                     timestamp,
                 };
 
-                const token = generateJWTToken(payload, configModule.getConfig('JWT_SECRET'), {
-                    expiresIn: time.minutes(15)
-                })
+                const token = generateJWTToken(payload, configModule.getConfig('JWT_SECRET'))
 
                 // TODO : In frontend pass this token to the smart contract to emit it as message, and while verifiying the digest get the token decode it and compare the amount of sui paid with the coin in mist
                 return successResponse({
@@ -77,9 +75,9 @@ const suiModule = new Module('sui', {
         async verifyDigest(args: { digest: string }, { req }) {
             try {
                 const { digest } = args;
-                const { walletAddress } = req.user;
+                const { walletAddress } = requirePlayer(req);
 
-                const MODULE_NAME = process.env.MODULE_NAME;
+                const MODULE_NAME = configModule.getConfig('MODULE_NAME');
                 const player = await dbPlayers.findOne({ walletAddress });
 
                 if (!player) {
@@ -112,8 +110,7 @@ const suiModule = new Module('sui', {
                 }
 
                 // message is emitted as vector<u8> — decode bytes back to JWT string
-                const tokenBytes: number[] = messageEvent.json.message;
-                const token = new TextDecoder().decode(new Uint8Array(tokenBytes));
+                const token: string = messageEvent.json.message;
 
                 // Decode and validate JWT
                 const decoded = verifyJWTToken<ChiPurchaseToken>(token, configModule.getConfig('JWT_SECRET'));
@@ -198,7 +195,11 @@ const suiModule = new Module('sui', {
 
                     await dbPlayers.updateOne(
                         { walletAddress },
-                        { chi: updatedchi }
+                        {
+                            $set: {
+                                chi: updatedchi
+                            }
+                        }
                     );
 
                     await dbChiTransactions.create({

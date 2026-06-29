@@ -11,7 +11,7 @@ export const dAppKit = createDAppKit({
     networks: ['testnet', 'mainnet'],
     defaultNetwork: 'testnet',
     createClient: (network) =>
-        new SuiGrpcClient({ network, baseUrl: GRPC_URLS[network] }),
+        new SuiGrpcClient({ network: 'testnet', baseUrl: GRPC_URLS.testnet }),
     autoConnect: true, // auto-reconnect to last used wallet
 });
 

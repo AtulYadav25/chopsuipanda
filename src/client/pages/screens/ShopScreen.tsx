@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react';
 import { Transaction } from '@mysten/sui/transactions';
 import SoundManager from '@/client/utils/SoundManager.js';
 import { useToast } from '@/client/context/ToastContext.js';
-import { useCurrentAccount, useDAppKit } from '@mysten/dapp-kit-react';
+import { useCurrentAccount, useCurrentClient, useDAppKit } from '@mysten/dapp-kit-react';
 import { configClientModule } from '@/client/modules.js';
 import { useAssetLoader } from '@/client/assets/useAssetLoader';
 import { introAssets, shopAssets } from '@/client/assets/index.js';
 import { CHI_SHOP_ITEMS, ChiShopItem } from '@/shared/constants/ChiShopConfig';
 import { usePurchaseChi, useVerifyDigest } from '@/client/hooks/sui';
 import { useRefreshPlayerProfile } from '@/client/hooks/player';
+import { fromBase64 } from '@mysten/sui/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -85,6 +86,7 @@ const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
     // Hooks
     const account = useCurrentAccount();
     const dAppKit = useDAppKit();
+    const client = useCurrentClient();
 
     // Mutations
     const { mutateAsync: purchaseChi } = usePurchaseChi();
@@ -108,24 +110,33 @@ const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
 
         try {
             const tx = new Transaction();
-            const [coin] = tx.splitCoins(tx.gas, [cost]);
-            tx.setGasBudget(100000000);
 
-            // Encode JWT string → UTF-8 bytes for vector<u8>
-            const messageBytes = Array.from(new TextEncoder().encode(message));
+            tx.setGasBudget(10000000);
+
+            const [coin] = tx.splitCoins(tx.gas, [cost]);
+
+            // const messageBytes = Array.from(new TextEncoder().encode(message));
 
             tx.moveCall({
                 target: `${PACKAGE_ID}::${MODULE_NAME}::paySUI`,
                 arguments: [
                     tx.object(OBJECT_ID),
                     coin,
-                    tx.pure.vector('u8', messageBytes),
+                    tx.pure.string(message),
                     tx.pure.u64(timeStampNow),
                     tx.pure.u64(cost),
                 ],
             });
 
-            const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
+            // Sign only (don't let Phantom execute)
+            const { bytes, signature } = await dAppKit.signTransaction({ transaction: tx });
+
+            // Execute yourself via the client
+            const result = await client.core.executeTransaction({
+                transaction: fromBase64(bytes),
+                signatures: [signature],
+            });
+
 
             if (result.FailedTransaction) {
                 setApiLoading({ loading: false, to: null });
@@ -148,7 +159,7 @@ const ShopScreen = ({ showConnectWallet }: ShopScreenProps) => {
                     },
                 }
             );
-        } catch {
+        } catch (e) {
             showToast({ type: 'error', message: 'Transaction Failed: Insufficient Balance' });
         } finally {
             setApiLoading({ loading: false, to: null });
