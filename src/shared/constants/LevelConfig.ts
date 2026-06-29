@@ -11,7 +11,7 @@ export const LEVEL_CONFIG: Record<number, LevelConfig> = {
         unlocks: [GAME_TYPES.TREE_CHOP],
     },
     2: {
-        upgradeCost: 250,
+        upgradeCost: 30000,
         unlocks: [GAME_TYPES.BAMBOO_SHOOT],
     },
     3: {
