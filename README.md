@@ -172,4 +172,28 @@ Configure `.modelence.env` with:
 
 ## License
 
-This project was built for the Sui hackathon.
+This project is licensed under the PolyForm Noncommercial 1.0.0 License.
+
+You are free to use, modify, and share this project for non-commercial purposes.
+
+Commercial use—including deploying the game to earn revenue, selling it, or including it in a commercial product—is prohibited without written permission from the copyright holder.
+
+## Commercial Use
+
+You may:
+
+- Run the game locally.
+- Study the source code.
+- Modify the game.
+- Fork the repository.
+- Submit pull requests.
+
+You may NOT:
+
+- Deploy the game for commercial purposes.
+- Sell the game.
+- Add ads or in-app purchases.
+- Charge users to play.
+- Use the game in any commercial product or service.
+
+For commercial licensing, contact the copyright holder.
