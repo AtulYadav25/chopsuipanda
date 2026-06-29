@@ -5,6 +5,7 @@ use sui::coin::{Self, Coin};
 use sui::ed25519;
 use sui::event;
 use sui::sui::SUI;
+use std::string::String;
 
 // ======== Errors ========
 const EInvalidPaymentAmount: u64 = 0;
@@ -35,7 +36,7 @@ public struct TreasuryTransfer has copy, drop {
 }
 // Define the event to log the generated message
 public struct PaymentMessageEvent has copy, drop {
-    message: vector<u8>,
+    message: String,
 }
 
 // ======== Storage ========
@@ -73,7 +74,7 @@ public fun init_for_testing(ctx: &mut TxContext) {
 public fun paySUI(
     game_state: &mut GameState,
     payment: Coin<SUI>,
-    message: vector<u8>,
+    message: String,
     timestamp: u64,
     cost: u64,
     ctx: &mut TxContext,

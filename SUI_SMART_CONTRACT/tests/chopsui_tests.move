@@ -45,7 +45,7 @@ module chopsui::game_tests {
             game::paySUI(
                 &mut game_state,
                 payment,
-                b"test.jwt.token",
+                "test.jwt.token",
                 1000000,
                 cost,
                 ctx(&mut scenario)
@@ -74,7 +74,7 @@ module chopsui::game_tests {
             game::paySUI(
                 &mut game_state,
                 payment,
-                b"fake.jwt",
+                "fake.jwt",
                 1000,
                 1_000_000_000,
                 ctx(&mut scenario)
